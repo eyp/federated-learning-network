@@ -11,7 +11,7 @@ server = Server()
 
 @app.route('/')
 def index():
-    return 'Federated Learning server running'
+    return 'Federated Learning server running. Status: ' + server.status
 
 
 @app.route('/training', methods=['GET'])

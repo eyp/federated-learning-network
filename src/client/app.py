@@ -20,7 +20,7 @@ client = Client(CLIENT_URL)
 
 @app.route('/')
 def index():
-    return 'Federated Learning client running'
+    return 'Federated Learning client running. Status:' + client.status
 
 
 @app.route('/training', methods=['POST'])
@@ -30,3 +30,8 @@ def training():
                                                         request.json['batch_size'])
     client.do_training(request_params_to_model_params(request.json), federated_learning_config)
     return Response(status=200)
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return 'This page does not exist', 404
