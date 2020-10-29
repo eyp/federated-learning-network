@@ -32,7 +32,7 @@ class Server:
         elif len(self.training_clients) == 0:
             print("There aren't any clients registered in the system, nothing to do yet")
         else:
-            request_body = model_params_to_request_body(self.model_params)
+            request_body = model_params_to_request_params(self.model_params)
             request_body['learning_rate'] = self.federated_learning_config.learning_rate
             request_body['epochs'] = self.federated_learning_config.epochs
             request_body['batch_size'] = self.federated_learning_config.batch_size

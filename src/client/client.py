@@ -34,7 +34,7 @@ class Client:
 
     def update_model_params_on_server(self):
         request_url = SERVER_URL + '/model_params'
-        request_body = model_params_to_request_body(self.model_params)
+        request_body = model_params_to_request_params(self.model_params)
         request_body['client_url'] = self.client_url
         response = requests.put(request_url, json=request_body)
         print('Response received from updating server model params:', response)

@@ -19,7 +19,7 @@ def plot_function(f, tx=None, ty=None, title=None, min=-2, max=2, figsize=(6, 4)
     if title is not None: ax.set_title(title)
 
 
-def model_params_to_request_body(model_params):
+def model_params_to_request_params(model_params):
     numpy_params = to_np(model_params)
     return {'weights': numpy_params[0].tolist(), 'bias': numpy_params[1].tolist()}
 
