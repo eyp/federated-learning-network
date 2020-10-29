@@ -16,7 +16,7 @@ class Server:
         self.init_params()
         self.training_clients = {}
         self.status = ServerStatus.IDLE
-        self.federated_learning_config = FederatedLearningConfig(1., 20, 256)
+        self.federated_learning_config = FederatedLearningConfig(learning_rate=1., epochs=20, batch_size=256)
 
     def init_params(self):
         if self.model_params is None:
