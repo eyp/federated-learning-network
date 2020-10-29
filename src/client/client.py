@@ -49,7 +49,6 @@ class Client:
     def register(self):
         print('Registering in server:', SERVER_URL)
         request_url = SERVER_URL + '/client'
-        # request_url = 'http://www.jfhsdkjhfjsdhgfjs.com'
         try:
             print('Doing request', request_url)
             response = requests.post(request_url, data={'client_url': self.client_url}, timeout=5)
