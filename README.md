@@ -71,5 +71,5 @@ you must restart everything.
 There's no persistence implemented yet, so everytime you start servers & clients the model will be initialized with 
 random values and must be trained from the beginning.
 
-This is a very early version so it has room for lots of improvements a lot, and probably it will be.
+This is a very early version so it has room for lots of improvements, so new features will be added.
 
