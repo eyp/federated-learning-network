@@ -96,11 +96,11 @@ You can change some training parameters (epochs, batch size and learning rate) a
       
 Also is possible to increase the samples used for training by the clients at:
 
-      federated-learning/src/client/client.py lines 69,70 for the training dataset and 80,81 for the validation dataset.
+      federated-learning/src/client/client.py lines 81,82 for the training dataset and 92,93 for the validation dataset.
       
 ## Known issues
-This is a very first approach, so when clients crash because some bug neither the server or the clients can recover, so 
-you must restart everything.
+This is a very first approach, so when clients crash because some bug, neither the server nor the clients can recover 
+from the failure, then you must restart everything.
 
 There's no persistence implemented yet, so everytime you start servers & clients the model will be initialized with 
 random values and must be trained from the beginning.
