@@ -3,7 +3,42 @@ Server and clients of a Federated Learning implementation
 
 ## Quick start
 
-### Installation
+There are two options for trying this project, using Docker to create containers for the server and the clients, or
+using a standard local installation from the command line.
+
+### Docker installation
+
+Create a network for the server and clients:
+
+    docker network create --driver bridge fl-network
+
+Create the Docker image of the server:
+
+    docker build -t fl-server -f Dockerfile .
+    
+Run the server:
+
+    docker run --rm --name fl-server -p 5000:5000 --expose=5000 -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5000 --network fl-network fl-server:latest
+
+This command will delete the server container after stopping it. It runs the server on port 5000.
+
+Now, for the client, the first step is creating the Docker image:
+
+    docker build -t fl-client -f Dockerfile .
+    
+Then, for starting a client running on port 5001 (you can use whatever free port you want):
+
+    docker run --rm --name fl-client-5001 -p 5001:5001 -e CLIENT_URL='http://fl-client-5001:5001' -e SERVER_URL='http://fl-server:5000' -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5001  --network=fl-network fl-client:latest
+    
+For other clients, simply change the port. For example, for running four clients, do:
+
+    docker run --rm --name fl-client-5002 -p 5002:5002 -e CLIENT_URL='http://fl-client-5002:5002' -e SERVER_URL='http://fl-server:5000' -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5002  --network=fl-network fl-client:latest
+    docker run --rm --name fl-client-5003 -p 5003:5003 -e CLIENT_URL='http://fl-client-5003:5003' -e SERVER_URL='http://fl-server:5000' -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5003  --network=fl-network fl-client:latest
+    docker run --rm --name fl-client-5004 -p 5004:5004 -e CLIENT_URL='http://fl-client-5004:5004' -e SERVER_URL='http://fl-server:5000' -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5004  --network=fl-network fl-client:latest
+    
+    
+### Command line
+If Docker is not an option, then you must install everything and running from the command line.
 Python version must be 3.8, I haven't tested it with 3.9 or <3.8 versions.
 
 The best way is to have an isolated environment using conda or similar environment managers.
@@ -18,10 +53,9 @@ Once you're ready to install packages, do this:
      pip install python-dotenv
      pip install aiohttp[speedups]
      pip install flask
-  
-  
-## Running the project   
-### Server
+    
+#### Running the project   
+##### Server
 That's very simple, just go to `federated-learning/src/server` and execute:
 
     flask run
@@ -31,7 +65,7 @@ You'll see a message like this:
 
     Federated Learning server running. Status: IDLE
     
-### Clients
+##### Clients
 Open a new console, or just do it in another computer which has access to the server.
 Go to `federated-learning/src/client` and execute:
 
@@ -71,5 +105,5 @@ you must restart everything.
 There's no persistence implemented yet, so everytime you start servers & clients the model will be initialized with 
 random values and must be trained from the beginning.
 
-This is a very early version so it has room for lots of improvements, so new features will be added.
+This is a very early version, so it has room for lots of improvements, so new features will be added.
 

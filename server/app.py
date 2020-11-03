@@ -2,7 +2,7 @@ import asyncio
 
 from flask import Flask, request, Response
 
-from src.common.utils import request_params_to_model_params
+from .utils import request_params_to_model_params
 from .server import Server
 
 app = Flask(__name__)

@@ -5,8 +5,8 @@ from flask import Flask, request, Response
 from os import environ
 
 from .client import Client
-from src.common.federated_learning_config import FederatedLearningConfig
-from src.common.utils import request_params_to_model_params
+from .federated_learning_config import FederatedLearningConfig
+from .utils import request_params_to_model_params
 
 CLIENT_URL = environ.get('CLIENT_URL')
 if CLIENT_URL is None:
@@ -20,7 +20,7 @@ client = Client(CLIENT_URL)
 
 @app.route('/')
 def index():
-    return 'Federated Learning client running. Status:' + client.status
+    return 'Federated Learning client running. Status: ' + client.status
 
 
 @app.route('/training', methods=['POST'])

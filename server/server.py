@@ -1,10 +1,10 @@
 import asyncio
-
+import sys
 import aiohttp
 import torch
 
-from src.common.utils import *
-from src.common.federated_learning_config import FederatedLearningConfig
+from .utils import model_params_to_request_params
+from .federated_learning_config import FederatedLearningConfig
 from .client_training_status import ClientTrainingStatus
 from .server_status import ServerStatus
 from .training_client import TrainingClient
@@ -43,6 +43,7 @@ class Server:
             print('Requesting training to clients...')
             self.status = ServerStatus.CLIENTS_TRAINING
             await asyncio.gather(*tasks)
+        sys.stdout.flush()
 
     @staticmethod
     async def do_training_client_request(training_client, request_body):
@@ -79,6 +80,7 @@ class Server:
         new_bias = torch.stack(received_biases).mean(0)
         self.model_params = new_weights, new_bias
         self.status = ServerStatus.IDLE
+        sys.stdout.flush()
 
     def are_all_client_model_params_received(self):
         for training_client in self.training_clients.values():
@@ -94,6 +96,7 @@ class Server:
             print('Client [', client_url, '] registered successfully')
         else:
             print('Client [', client_url, '] was already registered in the system')
+        sys.stdout.flush()
 
     def unregister_client(self, client_url):
         print('Unregistering client [', client_url, ']')
@@ -102,3 +105,4 @@ class Server:
             print('Client [', client_url, '] unregistered successfully')
         except KeyError:
             print('Client [', client_url, '] is not registered yet')
+        sys.stdout.flush()

@@ -16,7 +16,7 @@ class ClientModelTrainer:
         # print('Initial params:', self.model_params)
         for epoch in range(self.epochs):
             self.train_epoch()
-            print('Accuracy of model trained at epoch', epoch + 1, ':', self.validate_epoch(), end='\n')
+            print('Accuracy of model trained at epoch', epoch + 1, ':', self.validate_epoch(), end='\n', flush=True)
         return self.model_params
 
     def train_epoch(self):
