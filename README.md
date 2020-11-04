@@ -13,7 +13,8 @@ Create a network for the server and clients:
     docker network create --driver bridge fl-network
 
 Create the Docker image of the server:
-
+    
+    cd server
     docker build -t fl-server -f Dockerfile .
     
 Run the server:
@@ -24,6 +25,7 @@ This command will delete the server container after stopping it. It runs the ser
 
 Now, for the client, the first step is creating the Docker image:
 
+    cd client
     docker build -t fl-client -f Dockerfile .
     
 Then, for starting a client running on port 5001 (you can use whatever free port you want):
