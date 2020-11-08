@@ -62,7 +62,7 @@ That's very simple, just go to `federated-learning/src/server` and execute:
 
     flask run
     
-It'll start a master node in http://localhost:5000. To see that's running well, open a browser and go to that URL.
+It'll start a master node in `http://localhost:5000`. To see that's running well, open a browser and go to that URL.
 You'll see a message like this:
 
     Federated Learning server running. Status: IDLE
@@ -74,7 +74,7 @@ Go to `federated-learning/src/client` and execute:
     export CLIENT_URL='http://localhost:5001'
     flask run --port 5001
     
-Do that for every client, changing the listening port. You'll see some log traces telling that the client 
+Do that for every client, changing the listening port. You'll see some log traces telling the client 
 has started and has registered in the server:
 
     Registering in server: http://127.0.0.1:5000
@@ -83,12 +83,40 @@ has started and has registered in the server:
     Client registered successfully
     
 ### Training sessions
-Once we have server and clients running properly and registered, just go to the browser to http://localhost:5000/training.
-This will launch a training session between all the clients registered. You can see the progress of the trainings in each 
+Once we have server and clients running properly and registered, just go to the browser to `http://localhost:5000/training.
+This will launch a training session between all the clients registered. You can see the progress of the training in each 
 client's console.
 
+    Federated Learning config:
+    --Learning Rate: 1.0
+    --Epochs: 20
+    --Batch size: 256
+    
+    Training started...
+    Accuracy of model trained at epoch 1 : 0.9118
+    Accuracy of model trained at epoch 2 : 0.9118
+    Accuracy of model trained at epoch 3 : 0.9118
+    Accuracy of model trained at epoch 4 : 0.9118
+    Accuracy of model trained at epoch 5 : 0.8824
+    Accuracy of model trained at epoch 6 : 0.8824
+    Accuracy of model trained at epoch 7 : 0.9118
+    Accuracy of model trained at epoch 8 : 0.9118
+    Accuracy of model trained at epoch 9 : 0.9118
+    Accuracy of model trained at epoch 10 : 0.9118
+    Accuracy of model trained at epoch 11 : 0.9118
+    Accuracy of model trained at epoch 12 : 0.9118
+    Accuracy of model trained at epoch 13 : 0.9118
+    Accuracy of model trained at epoch 14 : 0.9118
+    Accuracy of model trained at epoch 15 : 0.9118
+    Accuracy of model trained at epoch 16 : 0.9412
+    Accuracy of model trained at epoch 17 : 0.9412
+    Accuracy of model trained at epoch 18 : 0.9412
+    Accuracy of model trained at epoch 19 : 0.9412
+    Accuracy of model trained at epoch 20 : 0.9412
+    Training finished...
+
 You can do more training sessions afterwards and see how the model improves. If the clients didn't finish its trainings, 
-the server will show a message in the console telling that it's still in status CLIENTS_TRAINING, and the new 
+the server will show a message in the console telling it's still in status CLIENTS_TRAINING, and the new 
 training session must wait.
 
 ## Customization
@@ -96,7 +124,7 @@ You can change some training parameters (epochs, batch size and learning rate) a
 
       federated-learning/src/server/server.py line 19
       
-Also is possible to increase the samples used for training by the clients at:
+Also, is possible to increase the samples used for training by the clients at:
 
       federated-learning/src/client/client.py lines 81,82 for the training dataset and 92,93 for the validation dataset.
       
