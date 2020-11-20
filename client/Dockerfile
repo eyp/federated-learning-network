@@ -11,7 +11,7 @@ apt-get install -y build-essential && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/*
 
-RUN pip install fastai==2.0.16 torch==1.6 torchvision==0.7 \
+RUN pip install fastai==2.1.5 torch==1.7.0 torchvision==0.8.1 \
 && pip install python-dotenv \
 && pip install aiohttp[speedups] \
 && pip install flask

@@ -51,7 +51,7 @@ If you use miniconda or conda, just do:
 
 Once you're ready to install packages, do this:
 
-     pip install fastai==2.0.16 torch==1.6 torchvision==0.7
+     pip install fastai==2.1.5 torch==1.7.0 torchvision==0.8.1
      pip install python-dotenv
      pip install aiohttp[speedups]
      pip install flask
