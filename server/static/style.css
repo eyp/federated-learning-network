@@ -1,0 +1,28 @@
+.badge.IDLE {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.badge.BUSY {
+    background-color: #6c757d;
+    color: white;
+}
+
+.badge.TRAINING {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge.CLIENTS_TRAINING {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge.UPDATING_MODEL_PARAMS {
+    background-color: #dc3545;
+    color: white;
+}
+
+.clients-registered {
+    margin-top: 2em;
+}

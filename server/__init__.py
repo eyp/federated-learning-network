@@ -1,0 +1,60 @@
+import asyncio
+import os
+
+from flask import (
+    Flask, Response, request, render_template
+)
+
+from .server import Server
+from .utils import request_params_to_model_params
+
+
+def create_app(test_config=None):
+    # create and configure the app
+    app = Flask(__name__, instance_relative_config=True)
+    server = Server()
+
+    app.config.from_mapping(
+        SECRET_KEY='dev',
+        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+    )
+    # ensure the instance folder exists
+    try:
+        os.makedirs(app.instance_path)
+    except OSError:
+        pass
+
+    @app.route('/')
+    def index():
+        return render_template("index.html",
+                               server_status=server.status,
+                               training_clients=server.training_clients,
+                               training_clients_size=len(server.training_clients))
+
+    @app.route('/training', methods=['GET'])
+    def training():
+        asyncio.run(server.start_training())
+        return 'Training started'
+
+    @app.route('/client', methods=['POST'])
+    def register_client():
+        print('Registering client:', request.form['client_url'])
+        server.register_client(request.form['client_url'])
+        return Response(status=201)
+
+    @app.route('/model_params', methods=['PUT'])
+    def update_weights():
+        print('Updating model params from client:', request.json['client_url'])
+        try:
+            training_client = server.training_clients[request.json['client_url']]
+            server.update_client_model_params(training_client, request_params_to_model_params(request.json))
+            return Response(status=200)
+        except KeyError:
+            print('Client', request.json['client_url'], 'is not registered in the system')
+            return Response(status=401)
+
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return 'This page does not exist', 404
+
+    return app
