@@ -58,7 +58,7 @@ Once you're ready to install packages, do this:
     
 #### Running the project   
 ##### Server
-That's very simple, just go to `federated-learning/src/server` and execute:
+That's very simple, just go to `federated-learning-network/server` and execute:
 
     flask run
     
@@ -69,7 +69,7 @@ You'll see a message like this:
     
 ##### Clients
 Open a new console, or just do it in another computer which has access to the server.
-Go to `federated-learning/src/client` and execute:
+Go to `federated-learning-network/client` and execute:
 
     export CLIENT_URL='http://localhost:5001'
     flask run --port 5001
@@ -122,11 +122,11 @@ training session must wait.
 ## Customization
 You can change some training parameters (epochs, batch size and learning rate) at:
 
-      federated-learning/src/server/server.py line 19
+      federated-learning-network/server/server.py line 19
       
 Also, is possible to increase the samples used for training by the clients at:
 
-      federated-learning/src/client/client.py lines 81,82 for the training dataset and 92,93 for the validation dataset.
+      federated-learning-network/client/client.py lines 81,82 for the training dataset and 92,93 for the validation dataset.
       
 ## Known issues
 This is a very first approach, so when clients crash because some bug, neither the server nor the clients can recover 
