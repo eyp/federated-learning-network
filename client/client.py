@@ -18,7 +18,7 @@ class Client:
         self.status = ClientStatus.IDLE
         self.SERVER_URL = environ.get('SERVER_URL')
         if self.SERVER_URL is None:
-            print('Warning: SERVER_URL environment variable is not defined, using DEFAUL_SERVER_URL:', DEFAULT_SERVER_URL)
+            print('Warning: SERVER_URL environment variable is not defined, using DEFAULT_SERVER_URL:', DEFAULT_SERVER_URL)
             self.SERVER_URL = DEFAULT_SERVER_URL
 
         if self.client_url is None:

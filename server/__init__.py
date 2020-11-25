@@ -16,7 +16,7 @@ def create_app(test_config=None):
 
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+        DATABASE=os.path.join(app.instance_path, 'fl-network.sqlite'),
     )
     # ensure the instance folder exists
     try:
@@ -28,29 +28,30 @@ def create_app(test_config=None):
     def index():
         return render_template("index.html",
                                server_status=server.status,
-                               training_clients=server.training_clients,
-                               training_clients_size=len(server.training_clients))
+                               training_clients=server.training_clients)
 
     @app.route('/training', methods=['GET'])
     def training():
+        print('Request GET /training')
         asyncio.run(server.start_training())
         return 'Training started'
 
     @app.route('/client', methods=['POST'])
     def register_client():
-        print('Registering client:', request.form['client_url'])
+        print('Request POST /client for client_url [', request.form['client_url'], ']')
         server.register_client(request.form['client_url'])
         return Response(status=201)
 
     @app.route('/model_params', methods=['PUT'])
     def update_weights():
-        print('Updating model params from client:', request.json['client_url'])
+        client_url = request.json['client_url']
+        print('Request PUT /model_params for client_url [', client_url, ']')
         try:
             training_client = server.training_clients[request.json['client_url']]
             server.update_client_model_params(training_client, request_params_to_model_params(request.json))
             return Response(status=200)
         except KeyError:
-            print('Client', request.json['client_url'], 'is not registered in the system')
+            print('Client', client_url, 'is not registered in the system')
             return Response(status=401)
 
     @app.errorhandler(404)
