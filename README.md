@@ -38,7 +38,7 @@ If our IP address is for example 192.168.1.20, and we have the server running on
 
 If the server is running on another IP address, simply change the variable SERVER_URL accordingly.
 
-##### Every node in a different IP address
+##### Every node on a different IP address
 If the IP address of the server is, for instance, at 192.168.1.100, and every client will be running on different IP addresses, we can do: 
 
     docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.28:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest
@@ -62,7 +62,7 @@ If you use miniconda or conda, just do:
 
 Once you're ready to install packages, do this:
 
-     pip install pip install torch torchvision
+     pip install torch torchvision
      pip install fastai
      pip install python-dotenv
      pip install aiohttp[speedups]
