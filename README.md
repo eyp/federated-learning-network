@@ -8,10 +8,6 @@ using a standard local installation from the command line.
 
 ### Docker installation
 
-Create a network for the server and clients:
-
-    docker network create --driver bridge fl-network
-
 Create the Docker image of the server:
     
     cd server
@@ -19,25 +15,40 @@ Create the Docker image of the server:
     
 Run the server:
 
-    docker run --rm --name fl-server -p 5000:5000 --expose=5000 -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5000 --network fl-network fl-server:latest
+    docker run --rm --name fl-server -p 5000:5000 fl-server:latest
 
 This command will delete the server container after stopping it. It runs the server on port 5000.
 
-Now, for the client, the first step is creating the Docker image:
+For the client, the first step is creating the Docker image:
 
     cd client
     docker build -t fl-client -f Dockerfile .
     
-Then, for starting a client running on port 5001 (you can use whatever free port you want):
+#### Running the project   
+Now there can be two different scenarios: running nodes on the same IP address, or running each node on a different IP address.
+Bear always in mind than we can choose the ports we want if they are free. The ports used in these examples are just that, examples.
 
-    docker run --rm --name fl-client-5001 -p 5001:5001 -e CLIENT_URL='http://fl-client-5001:5001' -e SERVER_URL='http://fl-server:5000' -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5001  --network=fl-network fl-client:latest
-    
-For other clients, simply change the port. For example, for running four clients, do:
+##### Same machine
+If our IP address is for example 192.168.1.20, and we have the server running on port 5000, we can run several Docker clients in different ports:
 
-    docker run --rm --name fl-client-5002 -p 5002:5002 -e CLIENT_URL='http://fl-client-5002:5002' -e SERVER_URL='http://fl-server:5000' -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5002  --network=fl-network fl-client:latest
-    docker run --rm --name fl-client-5003 -p 5003:5003 -e CLIENT_URL='http://fl-client-5003:5003' -e SERVER_URL='http://fl-server:5000' -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5003  --network=fl-network fl-client:latest
-    docker run --rm --name fl-client-5004 -p 5004:5004 -e CLIENT_URL='http://fl-client-5004:5004' -e SERVER_URL='http://fl-server:5000' -e FLASK_RUN_HOST=0.0.0.0 -e FLASK_RUN_PORT=5004  --network=fl-network fl-client:latest
+    docker run --rm --name fl-client-5001 -p 5001:5000 -e CLIENT_URL='http://192.168.1.20:5001' -e SERVER_URL='http://192.168.1.28:5000' fl-client:latest
+    docker run --rm --name fl-client-5002 -p 5002:5000 -e CLIENT_URL='http://192.168.1.20:5002' -e SERVER_URL='http://192.168.1.28:5000' fl-client:latest
+    docker run --rm --name fl-client-5003 -p 5003:5000 -e CLIENT_URL='http://192.168.1.20:5003' -e SERVER_URL='http://192.168.1.28:5000' fl-client:latest
+    docker run --rm --name fl-client-5004 -p 5004:5000 -e CLIENT_URL='http://192.168.1.20:5004' -e SERVER_URL='http://192.168.1.28:5000' fl-client:latest
+
+If the server is running on another IP address, simply change the variable SERVER_URL accordingly.
+
+##### Every node in a different IP address
+If the IP address of the server is, for instance, at 192.168.1.100, and every client will be running on different IP addresses, we can do: 
+
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.28:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest
     
+For other clients, simply use the right IP address of each one:
+
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.50:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.60:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.70:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.80:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest    
     
 ### Command line
 If Docker is not an option, then you must install everything and running from the command line.
@@ -51,7 +62,8 @@ If you use miniconda or conda, just do:
 
 Once you're ready to install packages, do this:
 
-     pip install fastai==2.1.5 torch==1.7.0 torchvision==0.8.1
+     pip install pip install torch torchvision
+     pip install fastai
      pip install python-dotenv
      pip install aiohttp[speedups]
      pip install flask
