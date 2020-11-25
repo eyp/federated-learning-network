@@ -1,8 +1,8 @@
 FROM python:3.8-slim
 
-COPY . /federated-learning/
+COPY . /federated-learning-network/
 
-WORKDIR /federated-learning/
+WORKDIR /federated-learning-network/
 
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
@@ -11,7 +11,8 @@ apt-get install -y build-essential && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/*
 
-RUN pip install fastai==2.1.5 torch==1.7.0 torchvision==0.8.1 \
+RUN pip install torch torchvision \
+&& pip install fastai \
 && pip install python-dotenv \
 && pip install aiohttp[speedups] \
 && pip install flask
