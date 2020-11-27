@@ -1,4 +1,5 @@
 (function () {
+
     let launchTrainingButton = document.getElementById("launchTrainingButton");
 
     const launchTraining = () => {
@@ -20,4 +21,9 @@
     launchTrainingButton.addEventListener('click', () => {
         launchTraining();
     })
+
+    const init = () => {
+    }
+
+    init();
 })();

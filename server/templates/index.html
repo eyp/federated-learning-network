@@ -11,6 +11,10 @@
                         <small class="text-muted">there are <span class="badge badge-pill badge-dark">{{ training_clients|length }}</span> client(s) registered in the network.</small>
                     {% endif %}
                 </small>
+                <a href="/"
+                   class="btn btn-sm btn-outline-dark"
+                   title="Refresh table"><i class="fa fa-sync"></i>
+                </a>
             </h4>
         </div>
     </div>
@@ -34,7 +38,11 @@
     </div>
     <div class="row">
         <div class="col">
-            <button type="button" id="launchTrainingButton" class="btn btn-success float-right" {{ '' if clients_ready_for_training else 'disabled' }}>Launch training</button>
+            <button type="button"
+                    id="launchTrainingButton"
+                    class="btn btn-success float-right" {{ '' if clients_ready_for_training else 'disabled' }}>
+                <i class="fa fa-cogs"></i> Launch training
+            </button>
         </div>
     </div>
 {% endblock %}

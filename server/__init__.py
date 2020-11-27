@@ -30,7 +30,7 @@ def create_app(test_config=None):
         return render_template("index.html",
                                server_status=server.status,
                                training_clients=server.training_clients,
-                               clients_ready_for_training = clients_ready_for_training)
+                               clients_ready_for_training=clients_ready_for_training)
 
     @app.route('/training', methods=['POST'])
     def training():
@@ -43,6 +43,12 @@ def create_app(test_config=None):
         print('Request POST /client for client_url [', request.form['client_url'], ']')
         server.register_client(request.form['client_url'])
         return Response(status=201)
+
+    @app.route('/client', methods=['DELETE'])
+    def unregister_client():
+        print('Request DELETE /client for client_url [', request.form['client_url'], ']')
+        server.unregister_client(request.form['client_url'])
+        return Response(status=200)
 
     @app.route('/model_params', methods=['PUT'])
     def update_weights():
