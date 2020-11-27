@@ -26,15 +26,17 @@ def create_app(test_config=None):
 
     @app.route('/')
     def index():
+        clients_ready_for_training = server.are_clients_ready_for_training()
         return render_template("index.html",
                                server_status=server.status,
-                               training_clients=server.training_clients)
+                               training_clients=server.training_clients,
+                               clients_ready_for_training = clients_ready_for_training)
 
-    @app.route('/training', methods=['GET'])
+    @app.route('/training', methods=['POST'])
     def training():
-        print('Request GET /training')
+        print('Request POST /training')
         asyncio.run(server.start_training())
-        return 'Training started'
+        return Response(status=200)
 
     @app.route('/client', methods=['POST'])
     def register_client():

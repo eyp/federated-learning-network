@@ -106,3 +106,10 @@ class Server:
         except KeyError:
             print('Client [', client_url, '] is not registered yet')
         sys.stdout.flush()
+
+    def are_clients_ready_for_training(self):
+        for training_client in self.training_clients.values():
+            if training_client.status == ClientTrainingStatus.IDLE:
+                return True
+        return False
+

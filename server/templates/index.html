@@ -1,27 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Home page{% endblock %}
 {% block content %}
-    <h4 class="clients-registered">
-        <small class="text-muted">Server status <span class="badge {{ server_status }}">{{ server_status }}</span>,
-        {% if training_clients|length == 1 %}
-        <small class="text-muted">there is <span class="badge badge-pill badge-dark">1</span> client registered in the network</small>
-        {% else %}
-        <small class="text-muted">there are <span class="badge badge-pill badge-dark">{{ training_clients|length }}</span> client(s) registered in the network.</small>
-        {% endif %}
-        </small>
-    </h4>
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th scope="col">URL</th>
-                <th scope="col">Status</th>
-            </tr>
-        </thead>
-        {%  for client_url,training_client in training_clients.items() %}
-            <tr>
-            <td>{{ client_url }}</td>
-            <td><span class="badge {{ training_client.status }}">{{ training_client.status }}</span></td>
-            </tr>
-        {% endfor %}
-    </table>
+    <div class="row">
+        <div class="col">
+            <h4 class="clients-registered">
+                <small class="text-muted">Server status <span class="badge {{ server_status }}">{{ server_status }}</span>,
+                    {% if training_clients|length == 1 %}
+                        <small class="text-muted">there is <span class="badge badge-pill badge-dark">1</span> client registered in the network</small>
+                    {% else %}
+                        <small class="text-muted">there are <span class="badge badge-pill badge-dark">{{ training_clients|length }}</span> client(s) registered in the network.</small>
+                    {% endif %}
+                </small>
+            </h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">URL</th>
+                    <th scope="col">Status</th>
+                </tr>
+                </thead>
+                {%  for client_url,training_client in training_clients.items() %}
+                    <tr>
+                        <td>{{ client_url }}</td>
+                        <td><span class="badge {{ training_client.status }}">{{ training_client.status }}</span></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <button type="button" id="launchTrainingButton" class="btn btn-success float-right" {{ '' if clients_ready_for_training else 'disabled' }}>Launch training</button>
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}
