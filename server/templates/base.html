@@ -11,14 +11,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
 </head>
 <body>
-<div class="container-fluid">
-    <nav class="navbar navbar-light bg-light">
+    <nav class="navbar navbar-dark bg-dark">
         <span class="navbar-brand mb-0 h1">Federated Learning Network</span>
     </nav>
-    <section class="content">
-        {% block content %}{% endblock %}
-    </section>
-</div>
+    <div class="container-fluid">
+        <section class="content">
+            {% block content %}{% endblock %}
+        </section>
+    </div>
 
 <script src="{{ url_for('static', filename='bootstrap/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ url_for('static', filename='fontawesome/all.min.js') }}"></script>

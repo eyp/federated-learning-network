@@ -1,9 +1,8 @@
 (function () {
-
-    let launchTrainingButton = document.getElementById("launchTrainingButton");
+    let $ctrl = this;
 
     const launchTraining = () => {
-        launchTrainingButton.disabled = true;
+        $ctrl.launchTrainingButton.disabled = true;
         fetch('/training', {
             method: 'POST'
         })
@@ -12,17 +11,25 @@
                     console.log('Training started');
                 }
             })
+            .catch((error) => {
+                // There was an error
+                console.warn('Error launching the training:', error);
+            })
             .finally(() => {
-                launchTrainingButton.disabled = false;
+                $ctrl.launchTrainingButton.disabled = false;
             })
 
     }
 
-    launchTrainingButton.addEventListener('click', () => {
-        launchTraining();
-    })
+    const setUpButtons = () => {
+        $ctrl.launchTrainingButton.addEventListener('click', () => {
+            launchTraining();
+        })
+    }
 
     const init = () => {
+        $ctrl.launchTrainingButton = document.getElementById("launchTrainingButton");
+        setUpButtons();
     }
 
     init();

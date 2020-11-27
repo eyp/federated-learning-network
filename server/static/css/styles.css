@@ -24,5 +24,9 @@
 }
 
 .clients-registered {
-    margin-top: 2em;
+    margin-top: 1em;
+}
+
+.server-status {
+    margin-top: 1em;
 }

@@ -3,23 +3,27 @@
 {% block content %}
     <div class="row">
         <div class="col">
-            <h4 class="clients-registered">
-                <small class="text-muted">Server status <span class="badge {{ server_status }}">{{ server_status }}</span>,
-                    {% if training_clients|length == 1 %}
-                        <small class="text-muted">there is <span class="badge badge-pill badge-dark">1</span> client registered in the network</small>
-                    {% else %}
-                        <small class="text-muted">there are <span class="badge badge-pill badge-dark">{{ training_clients|length }}</span> client(s) registered in the network.</small>
-                    {% endif %}
-                </small>
-                <a href="/"
-                   class="btn btn-sm btn-outline-dark"
-                   title="Refresh table"><i class="fa fa-sync"></i>
-                </a>
+            <h4 class="server-status">
+                Server status <span class="badge {{ server_status }}">{{ server_status }}</span>
             </h4>
         </div>
     </div>
     <div class="row">
         <div class="col">
+            <h4 class="clients-registered">
+                Clients
+                {% if training_clients|length == 0 %}
+                    <small class="text-muted">(no clients registered in the network yet)</small>
+                {% elif training_clients|length == 1 %}
+                    <small class="text-muted">(there is <span class="badge badge-pill badge-light">1</span> client registered in the network)</small>
+                {% else %}
+                    <small class="text-muted">(there are <span class="badge badge-pill badge-light">{{ training_clients|length }}</span> client(s) registered in the network)</small>
+                {% endif %}
+                <a href="/"
+                   class="btn btn-sm btn-outline-dark"
+                   title="Refresh clients table"><i class="fa fa-sync"></i>
+                </a>
+            </h4>
             <table class="table table-hover">
                 <thead>
                 <tr>
