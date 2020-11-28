@@ -7,7 +7,7 @@ from os import environ
 from requests.exceptions import Timeout
 from fastai.vision.all import *
 from .utils import printf, model_params_to_request_params
-from .client_model_trainer import ClientModelTrainer
+from .mnist_model_trainer import MnistModelTrainer
 from .client_status import ClientStatus
 from .config import DEFAULT_SERVER_URL
 
@@ -29,9 +29,8 @@ class Client:
     def do_training(self, model_params, federated_learning_config):
         if self.can_do_training():
             self.model_params = model_params
-            self.load_datasets()
             print(federated_learning_config)
-            client_model_trainer = ClientModelTrainer(self.train_dataset, self.valid_dataset, self.model_params, federated_learning_config, Client.linear, Client.mnist_loss)
+            client_model_trainer = MnistModelTrainer(self.model_params, federated_learning_config)
             self.status = ClientStatus.TRAINING
             print('Training started...')
             self.model_params = client_model_trainer.train_model()
@@ -71,49 +70,3 @@ class Client:
         except Timeout:
             print('Cannot register client in the server, server is not responding')
         sys.stdout.flush()
-
-    def load_datasets(self):
-        print('Loading dataset MNIST_SAMPLE...')
-        path = untar_data(URLs.MNIST_SAMPLE)
-        print('Content of MNIST_SAMPLE:', path.ls())
-        print("Content of 'train' directory of MNIST_SAMPLE", (path / 'train').ls())
-
-        threes = random.sample((path / 'train' / '3').ls().sorted(), int(random.uniform(20, 30)))
-        sevens = random.sample((path / 'train' / '7').ls().sorted(), int(random.uniform(20, 30)))
-
-        three_tensors = [tensor(Image.open(image_path)) for image_path in threes]
-        seven_tensors = [tensor(Image.open(image_path)) for image_path in sevens]
-
-        printf("There are %d images of number 3 and %d of number 7\n", len(three_tensors), len(seven_tensors))
-
-        stacked_threes = torch.stack(three_tensors).float() / 255
-        stacked_sevens = torch.stack(seven_tensors).float() / 255
-
-        valid_three_paths = random.sample((path / 'valid' / '3').ls(), int(random.uniform(10, 20)))
-        valid_seven_paths = random.sample((path / 'valid' / '7').ls(), int(random.uniform(10, 20)))
-
-        valid_three_tensors = torch.stack([tensor(Image.open(valid_three_path)) for valid_three_path in valid_three_paths])
-        valid_three_tensors = valid_three_tensors.float() / 255
-        valid_seven_tensors = torch.stack([tensor(Image.open(valid_seven_path)) for valid_seven_path in valid_seven_paths])
-        valid_seven_tensors = valid_seven_tensors.float() / 255
-        print('Shape of tensors of valid set of 3 images:', valid_three_tensors.shape, 'Shape of tensors of valid set of 7 images:',
-              valid_seven_tensors.shape)
-
-        train_images = torch.cat([stacked_threes, stacked_sevens]).view(-1, 28 * 28)
-        train_labels = tensor([1] * len(threes) + [0] * len(sevens)).unsqueeze(1)
-        self.train_dataset = list(zip(train_images, train_labels))
-        print('Training images shape:', train_images.shape, ', training labels shape:', train_labels.shape)
-
-        valid_images = torch.cat([valid_three_tensors, valid_seven_tensors]).view(-1, 28 * 28)
-        valid_labels = tensor([1] * len(valid_three_tensors) + [0] * len(valid_seven_tensors)).unsqueeze(1)
-        self.valid_dataset = list(zip(valid_images, valid_labels))
-        print('Dataset ready to be used')
-        sys.stdout.flush()
-
-    @staticmethod
-    def mnist_loss(predictions, targets):
-        predictions = predictions.sigmoid()
-        return torch.where(targets == 1, 1 - predictions, predictions).mean()
-
-    @staticmethod
-    def linear(matrix, weights, bias): return matrix @ weights + bias
