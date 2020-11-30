@@ -2,35 +2,23 @@ from fastai.vision.all import *
 
 from .utils import printf
 from .training_utils import mnist_loss, linear_model
+from .model_trainer import ModelTrainer
 
 
-class MnistModelTrainer:
+class MnistModelTrainer(ModelTrainer):
     def __init__(self, model_params, client_config):
+        print('Initializing MnistModelTrainer...')
         self.ACCURACY_THRESHOLD = 0.5
-        self.training_dataloader = None
-        self.validation_dataloader = None
+        super().__init__(model_params, client_config)
 
-        self.client_config = client_config
-        self.model_params = model_params
-
-    def train_model(self):
-        # print('Initial params:', self.model_params)
-        training_dataset, validation_dataset = self.__load_datasets()
-        self.training_dataloader = DataLoader(training_dataset, batch_size=self.client_config.batch_size)
-        self.validation_dataloader = DataLoader(validation_dataset, batch_size=self.client_config.batch_size)
-        for epoch in range(self.client_config.epochs):
-            self.__train_epoch()
-            print('Accuracy of model trained at epoch', epoch + 1, ':', self.__validate_epoch(), end='\n', flush=True)
-        return self.model_params
-
-    def __train_epoch(self):
+    def _ModelTrainer__train_epoch(self):
         for train_data, train_labels in self.training_dataloader:
             self.__calculate_gradients(train_data, train_labels)
             for model_param in self.model_params:
                 model_param.data -= model_param.grad * self.client_config.learning_rate
                 model_param.grad.zero_()
 
-    def __validate_epoch(self):
+    def _ModelTrainer__validate_epoch(self):
         accuracies = [self.__accuracy(linear_model(train_data, weights=self.model_params[0], bias=self.model_params[1]), train_labels) for
                       train_data, train_labels in
                       self.validation_dataloader]
@@ -46,7 +34,7 @@ class MnistModelTrainer:
         corrections = (predictions > self.ACCURACY_THRESHOLD) == train_labels
         return corrections.float().mean()
 
-    def __load_datasets(self):
+    def _ModelTrainer__load_datasets(self):
         print('Loading dataset MNIST_SAMPLE...')
         path = untar_data(URLs.MNIST_SAMPLE)
         print('Content of MNIST_SAMPLE:', path.ls())
