@@ -15,14 +15,11 @@
                 {% if training_clients|length == 0 %}
                     <small class="text-muted">(no clients registered in the network yet)</small>
                 {% elif training_clients|length == 1 %}
-                    <small class="text-muted">(there is <span class="badge badge-pill badge-light">1</span> client registered in the network)</small>
+                    <small class="text-muted">(<span class="badge badge-pill badge-light">1</span> client is registered in the network)</small>
                 {% else %}
-                    <small class="text-muted">(there are <span class="badge badge-pill badge-light">{{ training_clients|length }}</span> client(s) registered in the network)</small>
+                    <small class="text-muted">(<span class="badge badge-pill badge-light">{{ training_clients|length }}</span> clients are registered in the network)</small>
                 {% endif %}
-                <a href="/"
-                   class="btn btn-sm btn-outline-dark"
-                   title="Refresh clients table"><i class="fa fa-sync"></i>
-                </a>
+                <a href="/" class="btn btn-sm btn-outline-dark" title="Refresh clients table"><i class="fa fa-sync"></i></a>
             </h4>
             <table class="table table-hover">
                 <thead>
