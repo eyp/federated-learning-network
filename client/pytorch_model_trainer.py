@@ -2,7 +2,7 @@ from fastai.vision.all import DataLoader
 from abc import ABC, abstractmethod
 
 
-class ModelTrainer(ABC):
+class PyTorchModelTrainer(ABC):
     """
     This is the base class of model trainers.
     If you want to implement a new training, your class must inherit from ModelTrainer and

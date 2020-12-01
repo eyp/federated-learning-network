@@ -2,23 +2,23 @@ from fastai.vision.all import *
 
 from .utils import printf
 from .training_utils import mnist_loss, linear_model
-from .model_trainer import ModelTrainer
+from .pytorch_model_trainer import PyTorchModelTrainer
 
 
-class MnistModelTrainer(ModelTrainer):
+class MnistModelTrainer(PyTorchModelTrainer):
     def __init__(self, model_params, client_config):
         print('Initializing MnistModelTrainer...')
         self.ACCURACY_THRESHOLD = 0.5
         super().__init__(model_params, client_config)
 
-    def _ModelTrainer__train_epoch(self):
+    def _PyTorchModelTrainer__train_epoch(self):
         for train_data, train_labels in self.training_dataloader:
             self.__calculate_gradients(train_data, train_labels)
             for model_param in self.model_params:
                 model_param.data -= model_param.grad * self.client_config.learning_rate
                 model_param.grad.zero_()
 
-    def _ModelTrainer__validate_epoch(self):
+    def _PyTorchModelTrainer__validate_epoch(self):
         accuracies = [self.__accuracy(linear_model(train_data, weights=self.model_params[0], bias=self.model_params[1]), train_labels) for
                       train_data, train_labels in
                       self.validation_dataloader]
@@ -34,7 +34,7 @@ class MnistModelTrainer(ModelTrainer):
         corrections = (predictions > self.ACCURACY_THRESHOLD) == train_labels
         return corrections.float().mean()
 
-    def _ModelTrainer__load_datasets(self):
+    def _PyTorchModelTrainer__load_datasets(self):
         print('Loading dataset MNIST_SAMPLE...')
         path = untar_data(URLs.MNIST_SAMPLE)
         print('Content of MNIST_SAMPLE:', path.ls())

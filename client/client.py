@@ -1,12 +1,10 @@
 import sys
 import requests
-import random
 
 from os import environ
 
 from requests.exceptions import Timeout
-from fastai.vision.all import *
-from .utils import printf, model_params_to_request_params
+from .utils import model_params_to_request_params
 from .mnist_model_trainer import MnistModelTrainer
 from .client_status import ClientStatus
 from .config import DEFAULT_SERVER_URL
