@@ -1,10 +1,16 @@
 (function () {
     let $ctrl = this;
 
-    const launchTraining = () => {
-        $ctrl.launchTrainingButton.disabled = true;
+    const launchTraining = (button, trainingType) => {
+        button.disabled = true;
         fetch('/training', {
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'training_type': trainingType
+            })
         })
             .then((response) => {
                 if (response.status === 200) {
@@ -16,20 +22,21 @@
                 console.warn('Error launching the training:', error);
             })
             .finally(() => {
-                $ctrl.launchTrainingButton.disabled = false;
-            })
+                button.disabled = false;
+            });
 
-    }
-
-    const setUpButtons = () => {
-        $ctrl.launchTrainingButton.addEventListener('click', () => {
-            launchTraining();
-        })
     }
 
     const init = () => {
-        $ctrl.launchTrainingButton = document.getElementById("launchTrainingButton");
-        setUpButtons();
+        $ctrl.mnistTrainingButton = document.getElementById('mnistTrainingButton');
+        $ctrl.mnistTrainingButton.addEventListener('click', () => {
+            launchTraining(this, 'MNIST');
+        }, false);
+
+        $ctrl.chestXRayTrainingButton = document.getElementById('chestXRayTrainingButton');
+        $ctrl.chestXRayTrainingButton.addEventListener('click', () => {
+            launchTraining(this, 'CHEST_X_RAY_PNEUMONIA');
+        }, false);
     }
 
     init();

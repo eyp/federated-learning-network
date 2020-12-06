@@ -26,7 +26,7 @@ def create_app(test_config=None):
 
     @app.route('/')
     def index():
-        clients_ready_for_training = server.are_clients_ready_for_training()
+        clients_ready_for_training = server.can_do_training()
         return render_template("index.html",
                                server_status=server.status,
                                training_clients=server.training_clients,
@@ -35,7 +35,8 @@ def create_app(test_config=None):
     @app.route('/training', methods=['POST'])
     def training():
         print('Request POST /training')
-        asyncio.run(server.start_training())
+        training_type = request.json['training_type']
+        asyncio.run(server.start_training(training_type))
         return Response(status=200)
 
     @app.route('/client', methods=['POST'])
@@ -53,10 +54,11 @@ def create_app(test_config=None):
     @app.route('/model_params', methods=['PUT'])
     def update_weights():
         client_url = request.json['client_url']
-        print('Request PUT /model_params for client_url [', client_url, ']')
+        training_type = request.json['training_type']
+        print('Request PUT /model_params for client_url [', client_url, '] and training type:', training_type)
         try:
             training_client = server.training_clients[request.json['client_url']]
-            server.update_client_model_params(training_client, request_params_to_model_params(request.json))
+            server.update_client_model_params(training_type, training_client, request_params_to_model_params(training_type, request.json))
             return Response(status=200)
         except KeyError:
             print('Client', client_url, 'is not registered in the system')

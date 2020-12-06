@@ -8,8 +8,8 @@
             </h4>
         </div>
     </div>
-    <div class="row">
-        <div class="col">
+    <div class="row clients-status-bar">
+        <div class="col-6">
             <h4 class="clients-registered">
                 Clients
                 {% if training_clients|length == 0 %}
@@ -21,29 +21,35 @@
                 {% endif %}
                 <a href="/" class="btn btn-sm btn-outline-dark" title="Refresh clients table"><i class="fa fa-sync"></i></a>
             </h4>
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th scope="col">URL</th>
-                    <th scope="col">Status</th>
-                </tr>
-                </thead>
-                {%  for client_url,training_client in training_clients.items() %}
-                    <tr>
-                        <td>{{ client_url }}</td>
-                        <td><span class="badge {{ training_client.status }}">{{ training_client.status }}</span></td>
-                    </tr>
-                {% endfor %}
-            </table>
+        </div>
+        <div class="col-6">
+            <div class="dropdown float-right">
+                <button type="button" id="launchTrainingButton"
+                        class="btn btn-success dropdown-toggle" {{ '' if clients_ready_for_training else 'disabled' }}
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-cogs"></i> Launch training
+                </button>
+                <div class="dropdown-menu" aria-labelledby="launchTrainingButton">
+                    <a class="dropdown-item" id="mnistTrainingButton" href="#">MNIST training</a>
+                    <a class="dropdown-item" id="chestXRayTrainingButton" href="#">CHEST X-RAY training</a>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row">
         <div class="col">
-            <button type="button"
-                    id="launchTrainingButton"
-                    class="btn btn-success float-right" {{ '' if clients_ready_for_training else 'disabled' }}>
-                <i class="fa fa-cogs"></i> Launch training
-            </button>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">URL (status)</th>
+                </tr>
+                </thead>
+                {%  for client_url,training_client in training_clients.items() %}
+                    <tr>
+                        <td>{{ client_url }} <span class="badge {{ training_client.status }}">{{ training_client.status }}</span></td>
+                    </tr>
+                {% endfor %}
+            </table>
         </div>
     </div>
 {% endblock %}

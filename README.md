@@ -1,10 +1,28 @@
-# Federated Learning PoC
-Server and clients of a Federated Learning implementation
+# Federated Learning Network
+Provides a central node and client node implementations to
+build a Federated Learning network.
 
 ## Quick start
 
 There are two options for trying this project, using Docker to create containers for the server and the clients, or
 using a standard local installation from the command line.
+
+### Datasets
+For now there are two models for training: MNIST and Chest X-Ray. For using the MNIST one you don't need to install anything else because
+the client node downloads the dataset when it runs the training, but for the Chest X-Ray model you'll need a dataset to get it working.
+
+Download the dataset from Kaggle, at https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia/download, and uncompress it
+wherever you want on the client node machine, in a folder called `chest_xray`. 
+By default, the client node looks for it at GLOBAL_DATASETS/chest_xray. The variable GLOBAL_DATASETS is defined 
+in the configuration file `client/config.py`.
+
+If you're going to run the client node using Docker, you must pass a volume as a container parameter to indicate where you 
+have the datasets:
+
+    -v /your_datasets_directory:/federated-learning-network/datasets
+
+In particular, for Chest X-Ray training, It'll expect a directory `chest_xray` in your datasets directory with at least 
+two folders `train`and `test` with x-ray images. 
 
 ### Docker installation
 
@@ -31,24 +49,26 @@ Bear always in mind than we can choose the ports we want if they are free. The p
 ##### Same machine
 If our IP address is for example 192.168.1.20, and we have the server running on port 5000, we can run several Docker clients in different ports:
 
-    docker run --rm --name fl-client-5001 -p 5001:5000 -e CLIENT_URL='http://192.168.1.20:5001' -e SERVER_URL='http://192.168.1.20:5000' fl-client:latest
-    docker run --rm --name fl-client-5002 -p 5002:5000 -e CLIENT_URL='http://192.168.1.20:5002' -e SERVER_URL='http://192.168.1.20:5000' fl-client:latest
-    docker run --rm --name fl-client-5003 -p 5003:5000 -e CLIENT_URL='http://192.168.1.20:5003' -e SERVER_URL='http://192.168.1.20:5000' fl-client:latest
-    docker run --rm --name fl-client-5004 -p 5004:5000 -e CLIENT_URL='http://192.168.1.20:5004' -e SERVER_URL='http://192.168.1.20:5000' fl-client:latest
+    docker run --rm --name fl-client-5001 -p 5001:5000 -e CLIENT_URL='http://192.168.1.20:5001' -e SERVER_URL='http://192.168.1.20:5000' -v /your_datasets_directory:/federated-learning-network/datasets fl-client:latest
+    docker run --rm --name fl-client-5002 -p 5002:5000 -e CLIENT_URL='http://192.168.1.20:5002' -e SERVER_URL='http://192.168.1.20:5000' -v /your_datasets_directory:/federated-learning-network/datasets fl-client:latest
+    docker run --rm --name fl-client-5003 -p 5003:5000 -e CLIENT_URL='http://192.168.1.20:5003' -e SERVER_URL='http://192.168.1.20:5000' -v /your_datasets_directory:/federated-learning-network/datasets fl-client:latest
+    docker run --rm --name fl-client-5004 -p 5004:5000 -e CLIENT_URL='http://192.168.1.20:5004' -e SERVER_URL='http://192.168.1.20:5000' -v /your_datasets_directory:/federated-learning-network/datasets fl-client:latest
 
 If the server is running on another IP address, simply change the variable SERVER_URL accordingly.
+
+**IMPORTANT**: To be able to use the Chest X-Ray model training follow the instructions of _Training the Chest X-Ray model_ section.
 
 ##### Every node on a different IP address
 If the IP address of the server is, for instance, at 192.168.1.100, and every client will be running on different IP addresses, we can do: 
 
-    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.28:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.28:5000' -e SERVER_URL='http://192.168.1.100:5000' -v /your_datasets_directory:/federated-learning-network/datasets fl-client:latest
     
 For other clients, simply use the right IP address of each one:
 
-    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.50:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest
-    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.60:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest
-    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.70:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest
-    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.80:5000' -e SERVER_URL='http://192.168.1.100:5000' fl-client:latest    
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.50:5000' -e SERVER_URL='http://192.168.1.100:5000' -v /your_datasets_directory:/federated-learning-network/datasets fl-client:latest
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.60:5000' -e SERVER_URL='http://192.168.1.100:5000' -v /your_datasets_directory:/federated-learning-network/datasets fl-client:latest
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.70:5000' -e SERVER_URL='http://192.168.1.100:5000' -v /your_datasets_directory:/federated-learning-network/datasets fl-client:latest
+    docker run --rm --name fl-client -p 5000:5000 -e CLIENT_URL='http://192.168.1.80:5000' -e SERVER_URL='http://192.168.1.100:5000' -v /your_datasets_directory:/federated-learning-network/datasets fl-client:latest    
     
 ### Command line
 If Docker is not an option, then you must install everything and running from the command line.
@@ -63,6 +83,7 @@ If you use miniconda or conda, just do:
 Once you're ready to install packages, do this:
 
      pip install torch torchvision
+     pip install tensorflow
      pip install fastai
      pip install python-dotenv
      pip install aiohttp[speedups]
@@ -95,9 +116,10 @@ has started and has registered in the server:
     Client registered successfully
     
 ### Training sessions
-Once we have server and clients running properly and registered, just go to the browser to `http://localhost:5000/training.
+Once we have server and clients running properly and registered, just open the server dashboard at `http://localhost:5000`
+(or use the correct IP address where the server is running). And click on the _Launch training_ button.
 This will launch a training session between all the clients registered. You can see the progress of the training in each 
-client's console.
+client's console. For example, for MNIST training you will see something like this in the client node console:
 
     Federated Learning config:
     --Learning Rate: 1.0
@@ -134,16 +156,9 @@ training session must wait.
 ## Customization
 You can change some training parameters (epochs, batch size and learning rate) at:
 
-      federated-learning-network/server/server.py line 19
-      
-Also, is possible to increase the samples used for training by the clients at:
-
-      federated-learning-network/client/client.py lines 81,82 for the training dataset and 92,93 for the validation dataset.
+      federated-learning-network/server/server.py start_training method
       
 ## Known issues
-This is a very first approach, so when clients crash because some bug, neither the server nor the clients can recover 
-from the failure, then you must restart everything.
-
 There's no persistence implemented yet, so everytime you start servers & clients the model will be initialized with 
 random values and must be trained from the beginning.
 

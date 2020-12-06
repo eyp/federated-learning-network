@@ -23,8 +23,16 @@
     color: white;
 }
 
-.clients-registered {
+.badge.TRAINING_REQUEST_ERROR {
+    background-color: #dc3545;
+    color: white;
+}
+
+.clients-status-bar {
     margin-top: 1em;
+}
+
+.clients-registered {
 }
 
 .server-status {

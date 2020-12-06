@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Federated Learning Network - {% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/all.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <nav class="navbar navbar-dark bg-dark">
@@ -20,6 +20,7 @@
         </section>
     </div>
 
+<script src="{{ url_for('static', filename='jquery/jquery-3.5.1.slim.min.js') }}"></script>
 <script src="{{ url_for('static', filename='bootstrap/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ url_for('static', filename='fontawesome/all.min.js') }}"></script>
 {% block javascript %}{% endblock %}

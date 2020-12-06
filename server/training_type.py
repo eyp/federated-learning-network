@@ -1,0 +1,4 @@
+class TrainingType:
+    MNIST = 'MNIST'
+    CHEST_X_RAY_PNEUMONIA = 'CHEST_X_RAY_PNEUMONIA'
+

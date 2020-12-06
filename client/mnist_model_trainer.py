@@ -1,24 +1,34 @@
 from fastai.vision.all import *
 
-from .utils import printf
 from .training_utils import mnist_loss, linear_model
-from .pytorch_model_trainer import PyTorchModelTrainer
 
 
-class MnistModelTrainer(PyTorchModelTrainer):
+class MnistModelTrainer:
     def __init__(self, model_params, client_config):
         print('Initializing MnistModelTrainer...')
         self.ACCURACY_THRESHOLD = 0.5
-        super().__init__(model_params, client_config)
+        self.training_dataloader = None
+        self.validation_dataloader = None
+        self.client_config = client_config
+        self.model_params = model_params
 
-    def _PyTorchModelTrainer__train_epoch(self):
+    def train_model(self):
+        training_dataset, validation_dataset = self.__load_datasets()
+        self.training_dataloader = DataLoader(training_dataset, batch_size=self.client_config.batch_size)
+        self.validation_dataloader = DataLoader(validation_dataset, batch_size=self.client_config.batch_size)
+        for epoch in range(self.client_config.epochs):
+            self.__train_epoch()
+            print('Accuracy of model trained at epoch', epoch + 1, ':', self.__validate_epoch(), end='\n', flush=True)
+        return self.model_params
+
+    def __train_epoch(self):
         for train_data, train_labels in self.training_dataloader:
             self.__calculate_gradients(train_data, train_labels)
             for model_param in self.model_params:
                 model_param.data -= model_param.grad * self.client_config.learning_rate
                 model_param.grad.zero_()
 
-    def _PyTorchModelTrainer__validate_epoch(self):
+    def __validate_epoch(self):
         accuracies = [self.__accuracy(linear_model(train_data, weights=self.model_params[0], bias=self.model_params[1]), train_labels) for
                       train_data, train_labels in
                       self.validation_dataloader]
@@ -34,7 +44,7 @@ class MnistModelTrainer(PyTorchModelTrainer):
         corrections = (predictions > self.ACCURACY_THRESHOLD) == train_labels
         return corrections.float().mean()
 
-    def _PyTorchModelTrainer__load_datasets(self):
+    def __load_datasets(self):
         print('Loading dataset MNIST_SAMPLE...')
         path = untar_data(URLs.MNIST_SAMPLE)
         print('Content of MNIST_SAMPLE:', path.ls())
@@ -46,7 +56,7 @@ class MnistModelTrainer(PyTorchModelTrainer):
         three_tensors = [tensor(Image.open(image_path)) for image_path in threes]
         seven_tensors = [tensor(Image.open(image_path)) for image_path in sevens]
 
-        printf("There are %d images of number 3 and %d of number 7\n", len(three_tensors), len(seven_tensors))
+        print("There are', len(three_tensors), 'images of number 3 and', len(seven_tensors), 'of number 7\n")
 
         stacked_threes = torch.stack(three_tensors).float() / 255
         stacked_sevens = torch.stack(seven_tensors).float() / 255
