@@ -1,6 +1,5 @@
 # Federated Learning Network
-Provides a central node and client node implementations to
-build a Federated Learning network.
+Provides a central node and a client node implementation to build a Federated Learning network.
 
 ## Quick start
 
