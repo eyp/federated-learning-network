@@ -130,4 +130,4 @@ dmypy.json
 
 #IntelliJ project's directory
 /.idea/
-/client/tmp/
+/client/tmp/*
