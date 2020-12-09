@@ -59,22 +59,22 @@ class ChestXRayModelTrainer:
         training_dataset_train_path = self.temp_folder.name + "/train"
         training_dataset_valid_path = self.temp_folder.name + "/val"
 
-        os.makedirs(training_dataset_train_path + '/normal')
-        os.makedirs(training_dataset_train_path + '/pneumonia')
-        os.makedirs(training_dataset_valid_path + '/normal')
-        os.makedirs(training_dataset_valid_path + '/pneumonia')
+        os.makedirs(training_dataset_train_path + '/NORMAL')
+        os.makedirs(training_dataset_train_path + '/PNEUMONIA')
+        os.makedirs(training_dataset_valid_path + '/NORMAL')
+        os.makedirs(training_dataset_valid_path + '/PNEUMONIA')
 
-        self.__build_training_dataset(global_dataset_train_path, training_dataset_train_path, ['normal', 'pneumonia'], 100)
-        self.__build_training_dataset(global_dataset_valid_path, training_dataset_valid_path, ['normal', 'pneumonia'], 50)
+        self.__build_training_dataset(global_dataset_train_path, training_dataset_train_path, ['NORMAL', 'PNEUMONIA'], 100)
+        self.__build_training_dataset(global_dataset_valid_path, training_dataset_valid_path, ['NORMAL', 'PNEUMONIA'], 50)
 
         image_data_generator = ImageDataGenerator(preprocessing_function=keras.applications.vgg16.preprocess_input)
 
         train_batches = image_data_generator.flow_from_directory(
-            directory=training_dataset_train_path, target_size=(224, 224), classes=['pneumonia', 'normal'],
+            directory=training_dataset_train_path, target_size=(224, 224), classes=['PNEUMONIA', 'NORMAL'],
             batch_size=self.client_config.batch_size)
 
         valid_batches = image_data_generator.flow_from_directory(
-            directory=training_dataset_valid_path, target_size=(224, 224), classes=['pneumonia', 'normal'],
+            directory=training_dataset_valid_path, target_size=(224, 224), classes=['PNEUMONIA', 'NORMAL'],
             batch_size=self.client_config.batch_size)
 
         return train_batches, valid_batches
