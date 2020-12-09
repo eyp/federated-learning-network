@@ -31,28 +31,29 @@ class ChestXRayModelTrainer:
             Dense(units=2, activation='softmax')
         ])
         model.summary()
+
         model.compile(optimizer=Adam(learning_rate=self.client_config.learning_rate), loss='categorical_crossentropy', metrics=['accuracy'])
         if self.model_params is not None:
             print('Using model weights from central node')
             model.set_weights(self.model_params)
         else:
             print('Using default model weights')
+
+        self.__create_temp_dataset_folder()
         train_batches, valid_batches = self.__load_datasets()
-        print(train_batches)
+
         model.fit(x=train_batches,
                   steps_per_epoch=10,
                   epochs=self.client_config.epochs,
                   validation_data=valid_batches,
                   validation_steps=5,
                   verbose=2)
-        print('Deleting content of temporary dataset folder', self.temp_folder.name)
+
         self.__clean_temp_dataset_folder()
         return model.get_weights()
 
     def __load_datasets(self):
         print('Loading CHEST X-RAY IMAGES dataset...')
-        self.__create_temp_dataset_folder()
-
         global_dataset_train_path = GLOBAL_DATASETS + '/chest_xray/train'
         global_dataset_valid_path = GLOBAL_DATASETS + '/chest_xray/test'
 
@@ -81,16 +82,20 @@ class ChestXRayModelTrainer:
 
     def __create_temp_dataset_folder(self):
         if os.path.isdir(self.chest_x_ray_temp_folder) is False:
-            print('Temporary folder', self.chest_x_ray_temp_folder, 'doesn\'t exist, creating it')
+            print('Temporary dataset folder', self.chest_x_ray_temp_folder, 'doesn\'t exist, creating it')
             os.mkdir(self.chest_x_ray_temp_folder)
 
         self.temp_folder = tempfile.TemporaryDirectory(dir=self.chest_x_ray_temp_folder)
-        print('Temporary folder for dataset:', self.temp_folder.name)
+        print('Temporary folder for training:', self.temp_folder.name)
 
     def __clean_temp_dataset_folder(self):
+        print('Deleting content of temporary folder', self.temp_folder.name)
         self.temp_folder.cleanup()
         if os.path.isdir(self.chest_x_ray_temp_folder):
-            os.rmdir(self.chest_x_ray_temp_folder)
+            path, dirs, files = next(os.walk(self.chest_x_ray_temp_folder))
+            if len(dirs) == 0:
+                print('Deleting temporary dataset folder', self.chest_x_ray_temp_folder)
+                os.rmdir(self.chest_x_ray_temp_folder)
 
     def __build_training_dataset(self, global_dataset_path, training_dataset_path, classes, samples_size, pattern='*'):
         for a_class in classes:
