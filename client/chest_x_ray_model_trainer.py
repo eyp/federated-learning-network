@@ -18,6 +18,8 @@ class ChestXRayModelTrainer:
         self.client_config = client_config
         self.model_params = model_params
         self.temp_folder = None
+        current_directory = os.path.dirname(os.path.realpath(__file__))
+        self.chest_x_ray_temp_folder = current_directory + GLOBAL_TMP_PATH + '/chest_xray/'
 
     def train_model(self):
         model = Sequential([
@@ -44,14 +46,12 @@ class ChestXRayModelTrainer:
                   validation_steps=5,
                   verbose=2)
         print('Deleting content of temporary dataset folder', self.temp_folder.name)
-        self.temp_folder.cleanup()
+        self.__clean_temp_dataset_folder()
         return model.get_weights()
 
     def __load_datasets(self):
         print('Loading CHEST X-RAY IMAGES dataset...')
-        current_directory = os.path.dirname(os.path.realpath(__file__))
-        self.temp_folder = tempfile.TemporaryDirectory(dir=current_directory + GLOBAL_TMP_PATH + '/chest_xray/')
-        print('Temporary folder for dataset:', self.temp_folder.name)
+        self.__create_temp_dataset_folder()
 
         global_dataset_train_path = GLOBAL_DATASETS + '/chest_xray/train'
         global_dataset_valid_path = GLOBAL_DATASETS + '/chest_xray/test'
@@ -78,6 +78,19 @@ class ChestXRayModelTrainer:
             batch_size=self.client_config.batch_size)
 
         return train_batches, valid_batches
+
+    def __create_temp_dataset_folder(self):
+        if os.path.isdir(self.chest_x_ray_temp_folder) is False:
+            print('Temporary folder', self.chest_x_ray_temp_folder, 'doesn\'t exist, creating it')
+            os.mkdir(self.chest_x_ray_temp_folder)
+
+        self.temp_folder = tempfile.TemporaryDirectory(dir=self.chest_x_ray_temp_folder)
+        print('Temporary folder for dataset:', self.temp_folder.name)
+
+    def __clean_temp_dataset_folder(self):
+        self.temp_folder.cleanup()
+        if os.path.isdir(self.chest_x_ray_temp_folder):
+            os.rmdir(self.chest_x_ray_temp_folder)
 
     def __build_training_dataset(self, global_dataset_path, training_dataset_path, classes, samples_size, pattern='*'):
         for a_class in classes:
