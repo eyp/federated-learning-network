@@ -1,17 +1,35 @@
 # Federated Learning Network
-Provides a central node and a client node implementation to build a Federated Learning network.
 
-## Quick start
+Provides a central node, and a client node implementation to build a Federated Learning network.
+The central node orchestrates the training of one or several models that is performed by the client nodes.
+Each client node has its own dataset to train a local model, and sends the result of the training to the 
+central node, that calculates the average of all the weights of the node clients models. That average 
+will be used by the clients on the next rounds of trainings. The local data of each client node is never 
+shared with any other node.
 
-There are two options for trying this project, using Docker to create containers for the server and the clients, or
-using a standard local installation from the command line.
+## Introduction
+
+There are two options for running the nodes in the network, using Docker to create containers for each kind of node, or
+using a standard local installation from the command line. Of course, both can be mixed (some nodes running as containers and other 
+by command line).
 
 ### Datasets
-For now there are two models for training: MNIST and Chest X-Ray. For using the MNIST one you don't need to install anything else because
+For now, there are two models for training: MNIST and Chest X-Ray. For using the MNIST one you don't need to install anything else because
 the client node downloads the dataset when it runs the training, but for the Chest X-Ray model you'll need a dataset to get it working.
 
-Download the dataset from Kaggle, at https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia/download, and uncompress it
-wherever you want on the client node machine, in a folder called `chest_xray`. 
+Download the dataset from https://data.mendeley.com/public-files/datasets/rscbjbr9sj/files/f12eaf6d-6023-432f-acc9-80c9d7393433/file_downloaded, 
+and uncompress it wherever you want on the client node machine, in a folder called `chest_xray`. 
+The final structure must be (other content in this folder will be ignored):
+
+    chest_xray
+         |----- train
+         |        |----- NORMAL
+         |        |----- PNEUMONIA
+         |
+         |----- test
+                  |----- NORMAL
+                  |----- PNEUMONIA
+
 By default, the client node looks for it at GLOBAL_DATASETS/chest_xray. The variable GLOBAL_DATASETS is defined 
 in the configuration file `client/config.py`.
 
@@ -20,8 +38,8 @@ have the datasets:
 
     -v /your_datasets_directory:/federated-learning-network/datasets
 
-In particular, for Chest X-Ray training, It'll expect a directory `chest_xray` in your datasets directory with at least 
-two folders `train`and `test` with x-ray images. 
+In particular, for Chest X-Ray training, it'll expect a directory `chest_xray` in your dataset's directory with at least 
+two folders `train` and `test` with x-ray images. 
 
 ### Docker installation
 
@@ -89,17 +107,15 @@ Once you're ready to install packages, do this:
      pip install flask
     
 #### Running the project   
-##### Server
+##### Central node
 That's very simple, just go to `federated-learning-network/server` and execute:
 
     flask run
     
-It'll start a master node in `http://localhost:5000`. To see that's running well, open a browser and go to that URL.
-You'll see a message like this:
+It'll start a central node in `http://localhost:5000`. To see that's running well, open a browser and go to that URL.
+You'll see the dashboard of the network.
 
-    Federated Learning server running. Status: IDLE
-    
-##### Clients
+##### Client nodes
 Open a new console, or just do it in another computer which has access to the server.
 Go to `federated-learning-network/client` and execute:
 
@@ -107,17 +123,19 @@ Go to `federated-learning-network/client` and execute:
     flask run --port 5001
     
 Do that for every client, changing the listening port. You'll see some log traces telling the client 
-has started and has registered in the server:
+has started and has registered in the network:
 
     Registering in server: http://127.0.0.1:5000
     Doing request http://127.0.0.1:5000/client
     Response received from registration: <Response [201]>
     Client registered successfully
-    
+
+If you refresh the central’s node dashboard you can see all the clients registered in the network.
+
 ### Training sessions
-Once we have server and clients running properly and registered, just open the server dashboard at `http://localhost:5000`
-(or use the correct IP address where the server is running). And click on the _Launch training_ button.
-This will launch a training session between all the clients registered. You can see the progress of the training in each 
+Once we have the central node and clients running properly and registered, just open the server dashboard and click on 
+the _Launch training_ button.
+This action will launch a training session between all the clients registered. You can see the progress of the training in each 
 client's console. For example, for MNIST training you will see something like this in the client node console:
 
     Federated Learning config:
@@ -148,15 +166,15 @@ client's console. For example, for MNIST training you will see something like th
     Accuracy of model trained at epoch 20 : 0.9412
     Training finished...
 
-You can do more training sessions afterwards and see how the model improves. If the clients didn't finish its trainings, 
-the server will show a message in the console telling it's still in status CLIENTS_TRAINING, and the new 
-training session must wait.
+You can do more training sessions afterwards and see how the model improves. 
 
 ## Customization
 You can change some training parameters (epochs, batch size and learning rate) at:
 
       federated-learning-network/server/server.py start_training method
-      
+
+In the future it'll be possible to do it from the central node's dashboard.
+
 ## Known issues
 There's no persistence implemented yet, so everytime you start servers & clients the model will be initialized with 
 random values and must be trained from the beginning.
