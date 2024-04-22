@@ -36,6 +36,9 @@ class Server:
         elif len(self.training_clients) == 0:
             print("There aren't any clients registered in the system, nothing to do yet")
         else:
+            # increment training round
+            self.round += 1
+
             request_body = {}
             federated_learning_config = None
             if training_type == TrainingType.MNIST:
@@ -49,9 +52,12 @@ class Server:
             request_body['epochs'] = federated_learning_config.epochs
             request_body['batch_size'] = federated_learning_config.batch_size
             request_body['training_type'] = training_type
+            request_body['round'] = self.round
+
             print('There are', len(self.training_clients), 'clients registered')
             tasks = []
             for training_client in self.training_clients.values():
+                request_body['client_id'] = training_client.client_id
                 tasks.append(asyncio.ensure_future(self.do_training_client_request(training_type, training_client, request_body)))
             print('Requesting training to clients...')
             self.status = ServerStatus.CLIENTS_TRAINING
@@ -117,11 +123,11 @@ class Server:
         if self.training_clients.get(client_url) is None:
             next_client_id = len(self.training_clients) + 1
             self.training_clients[client_url] = TrainingClient(client_url, next_client_id)
-            print('Client [', client_url, '] registered successfully')
             return next_client_id, self.round
         else:
             print('Client [', client_url, '] was already registered in the system')
             self.training_clients.get(client_url).status = ClientTrainingStatus.IDLE
+            return self.training_clients.get(client_url).client_id, self.round
         sys.stdout.flush()
 
     def unregister_client(self, client_url):

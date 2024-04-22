@@ -4,13 +4,15 @@ from .training_utils import mnist_loss, linear_model
 
 
 class MnistModelTrainer:
-    def __init__(self, model_params, client_config):
+    def __init__(self, model_params, client_config, client_id, round):
         print('Initializing MnistModelTrainer...')
         self.ACCURACY_THRESHOLD = 0.5
         self.training_dataloader = None
         self.validation_dataloader = None
         self.client_config = client_config
         self.model_params = model_params
+        self.round = round
+        self.client_id = client_id
 
     def train_model(self):
         training_dataset, validation_dataset = self.__load_datasets()
@@ -45,6 +47,8 @@ class MnistModelTrainer:
         return corrections.float().mean()
 
     def __load_datasets(self):
+        print('HIII', self.client_id)
+        print("POO", self.round)
         print('Loading dataset MNIST_SAMPLE...')
         path = untar_data(URLs.MNIST_SAMPLE)
         print('Content of MNIST_SAMPLE:', path.ls())

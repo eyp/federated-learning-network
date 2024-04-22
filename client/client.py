@@ -32,13 +32,14 @@ class Client:
         self.client_id = None
         self.round = None
 
-    def do_training(self, training_type, model_params, federated_learning_config):
+    def do_training(self, training_type, model_params, federated_learning_config, round, client_id):
         if self.can_do_training():
             self.training_type = training_type
-            print(federated_learning_config)
+            self.round = round
+            self.client_id = client_id
 
             if self.training_type == TrainingType.MNIST:
-                client_model_trainer = MnistModelTrainer(model_params, federated_learning_config)
+                client_model_trainer = MnistModelTrainer(model_params, federated_learning_config, self.client_id, self.round)
             elif self.training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
                 client_model_trainer = ChestXRayModelTrainer(model_params, federated_learning_config)
             else:
