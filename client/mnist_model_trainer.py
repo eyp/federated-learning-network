@@ -47,15 +47,19 @@ class MnistModelTrainer:
         return corrections.float().mean()
 
     def __load_datasets(self):
-        print('HIII', self.client_id)
-        print("POO", self.round)
         print('Loading dataset MNIST_SAMPLE...')
         path = untar_data(URLs.MNIST_SAMPLE)
         print('Content of MNIST_SAMPLE:', path.ls())
         print("Content of 'train' directory of MNIST_SAMPLE", (path / 'train').ls())
 
-        threes = random.sample((path / 'train' / '3').ls().sorted(), int(random.uniform(20, 30)))
-        sevens = random.sample((path / 'train' / '7').ls().sorted(), int(random.uniform(20, 30)))
+        client_id = int(self.client_id)
+        round = int(self.round)
+        train_sample_size = 25
+        max_client_number = 5
+        start_index = train_sample_size * client_id + (round - 1) * train_sample_size * max_client_number
+        end_index = start_index + train_sample_size
+        threes = (path / 'train' / '3').ls().sorted()[start_index:end_index]
+        sevens = (path / 'train' / '7').ls().sorted()[start_index:end_index]
 
         three_tensors = [tensor(Image.open(image_path)) for image_path in threes]
         seven_tensors = [tensor(Image.open(image_path)) for image_path in sevens]
@@ -65,8 +69,11 @@ class MnistModelTrainer:
         stacked_threes = torch.stack(three_tensors).float() / 255
         stacked_sevens = torch.stack(seven_tensors).float() / 255
 
-        valid_three_paths = random.sample((path / 'valid' / '3').ls(), int(random.uniform(10, 20)))
-        valid_seven_paths = random.sample((path / 'valid' / '7').ls(), int(random.uniform(10, 20)))
+        valid_sample_size = 15
+        valid_start_index = valid_sample_size * client_id + (round - 1) * valid_sample_size * max_client_number
+        valid_end_index = start_index + valid_sample_size
+        valid_three_paths = (path / 'valid' / '3').ls().sorted()[valid_start_index:valid_end_index]
+        valid_seven_paths = (path / 'valid' / '7').ls()[valid_start_index:valid_end_index]
 
         valid_three_tensors = torch.stack([tensor(Image.open(valid_three_path)) for valid_three_path in valid_three_paths])
         valid_three_tensors = valid_three_tensors.float() / 255
