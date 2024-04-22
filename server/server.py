@@ -20,6 +20,7 @@ class Server:
         self.init_params()
         self.training_clients = {}
         self.status = ServerStatus.IDLE
+        self.round = 0
 
     def init_params(self):
         if self.mnist_model_params is None:
@@ -114,8 +115,10 @@ class Server:
     def register_client(self, client_url):
         print('Registering new training client [', client_url, ']')
         if self.training_clients.get(client_url) is None:
-            self.training_clients[client_url] = TrainingClient(client_url)
+            next_client_id = len(self.training_clients) + 1
+            self.training_clients[client_url] = TrainingClient(client_url, next_client_id)
             print('Client [', client_url, '] registered successfully')
+            return next_client_id, self.round
         else:
             print('Client [', client_url, '] was already registered in the system')
             self.training_clients.get(client_url).status = ClientTrainingStatus.IDLE

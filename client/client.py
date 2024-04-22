@@ -29,6 +29,8 @@ class Client:
             print('Error: client_url is missing, cannot create a client')
             return
         self.register()
+        self.client_id = None
+        self.round = None
 
     def do_training(self, training_type, model_params, federated_learning_config):
         if self.can_do_training():
@@ -85,6 +87,11 @@ class Client:
                 print('Cannot register client in the system at', request_url, 'error:', response.reason)
             else:
                 print('Client registered successfully')
+
+                # register client id and round assigned by the server
+                response_data = response.json()
+                self.client_id = response_data['client_id']
+                self.round = response_data['round']
         except Timeout:
             print('Cannot register client in the central node, the central node is not responding')
         sys.stdout.flush()
