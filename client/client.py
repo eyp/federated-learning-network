@@ -29,14 +29,17 @@ class Client:
             print('Error: client_url is missing, cannot create a client')
             return
         self.register()
+        self.client_id = None
+        self.round = None
 
-    def do_training(self, training_type, model_params, federated_learning_config):
+    def do_training(self, training_type, model_params, federated_learning_config, round, client_id):
         if self.can_do_training():
             self.training_type = training_type
-            print(federated_learning_config)
+            self.round = round
+            self.client_id = client_id
 
             if self.training_type == TrainingType.MNIST:
-                client_model_trainer = MnistModelTrainer(model_params, federated_learning_config)
+                client_model_trainer = MnistModelTrainer(model_params, federated_learning_config, self.client_id, self.round)
             elif self.training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
                 client_model_trainer = ChestXRayModelTrainer(model_params, federated_learning_config)
             else:
@@ -85,6 +88,11 @@ class Client:
                 print('Cannot register client in the system at', request_url, 'error:', response.reason)
             else:
                 print('Client registered successfully')
+
+                # register client id and round assigned by the server
+                response_data = response.json()
+                self.client_id = response_data['client_id']
+                self.round = response_data['round']
         except Timeout:
             print('Cannot register client in the central node, the central node is not responding')
         sys.stdout.flush()

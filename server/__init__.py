@@ -2,7 +2,7 @@ import asyncio
 import os
 
 from flask import (
-    Flask, Response, request, render_template
+    Flask, Response, request, render_template, jsonify
 )
 
 from .server import Server
@@ -42,8 +42,11 @@ def create_app(test_config=None):
     @app.route('/client', methods=['POST'])
     def register_client():
         print('Request POST /client for client_url [', request.form['client_url'], ']')
-        server.register_client(request.form['client_url'])
-        return Response(status=201)
+        client_id, round = server.register_client(request.form['client_url'])
+        data_dict = {'client_id': client_id, 'round': round}
+        response = jsonify(data_dict)
+        response.status_code = 201
+        return response
 
     @app.route('/client', methods=['DELETE'])
     def unregister_client():
