@@ -14,7 +14,6 @@ class DeterministicMnistModelTrainer:
         self.client_config = client_config
         self.model_params = model_params
 
-        # TODO check if they're already passed in as int or are they string?
         self.client_id = client_id
         self.round = round
         self.round_size = round_size
@@ -59,11 +58,12 @@ class DeterministicMnistModelTrainer:
         print("Content of 'train' directory of MNIST_SAMPLE", (path / 'train').ls())
 
         train_sample_size = 25
-        client_id = int(self.client_id)
-        round = int(self.round)
-        round_size = int(self.round_size)
 
-        start_index = train_sample_size * client_id + (round - 1) * train_sample_size * round_size
+        print('ROUND SIZE', self.round_size)
+        print('Client id', self.client_id)
+        print('ROUND', self.round)
+
+        start_index = train_sample_size * self.client_id + (self.round - 1) * train_sample_size * self.round_size
         end_index = start_index + train_sample_size
         threes = (path / 'train' / '3').ls().sorted()[start_index:end_index]
         sevens = (path / 'train' / '7').ls().sorted()[start_index:end_index]
@@ -77,7 +77,7 @@ class DeterministicMnistModelTrainer:
         stacked_sevens = torch.stack(seven_tensors).float() / 255
 
         valid_sample_size = 15
-        valid_start_index = valid_sample_size * client_id + (round - 1) * valid_sample_size * round_size
+        valid_start_index = valid_sample_size * self.client_id + (self.round - 1) * valid_sample_size * self.round_size
         valid_end_index = start_index + valid_sample_size
         valid_three_paths = (path / 'valid' / '3').ls().sorted()[valid_start_index:valid_end_index]
         valid_seven_paths = (path / 'valid' / '7').ls()[valid_start_index:valid_end_index]
