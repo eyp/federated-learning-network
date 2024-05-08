@@ -57,8 +57,12 @@ class Server:
             print('There are', len(self.training_clients), 'clients registered')
             tasks = []
             for training_client in self.training_clients.values():
-                request_body['client_id'] = training_client.client_id
-                tasks.append(asyncio.ensure_future(self.do_training_client_request(training_type, training_client, request_body)))
+                if training_type == TrainingType.DETERMINISTIC_MNIST:
+                    request_body['client_id'] = training_client.client_id
+                    request_body['round_size'] = len(self.training_clients.values())
+                tasks.append(
+                    asyncio.ensure_future(self.do_training_client_request(training_type, training_client, request_body))
+                )
             print('Requesting training to clients...')
             self.status = ServerStatus.CLIENTS_TRAINING
             await asyncio.gather(*tasks)
@@ -123,11 +127,9 @@ class Server:
         if self.training_clients.get(client_url) is None:
             next_client_id = len(self.training_clients) + 1
             self.training_clients[client_url] = TrainingClient(client_url, next_client_id)
-            return next_client_id, self.round
         else:
             print('Client [', client_url, '] was already registered in the system')
             self.training_clients.get(client_url).status = ClientTrainingStatus.IDLE
-            return self.training_clients.get(client_url).client_id, self.round
         sys.stdout.flush()
 
     def unregister_client(self, client_url):

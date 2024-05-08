@@ -31,9 +31,11 @@ def training():
                                                         request.json['epochs'],
                                                         request.json['batch_size'])
     model_params = request_params_to_model_params(training_type, request.json)
-    round = request.json['round']
+    print(request.json)
     client_id = request.json['client_id']
-    client.do_training(training_type, model_params, federated_learning_config, round, client_id)
+    round = request.json['round']
+    round_size = request.json['round_size']
+    client.do_training(training_type, model_params, federated_learning_config, client_id, round, round_size)
     return Response(status=200)
 
 

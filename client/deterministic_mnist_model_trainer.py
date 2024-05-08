@@ -1,19 +1,23 @@
 from fastai.vision.all import *
 
+from .mnist_model_trainer import MnistModelTrainer
 from .training_utils import mnist_loss, linear_model
 
 
-# TODO @udameli return this to its original state without rounds and client ids
-class MnistModelTrainer:
-    def __init__(self, model_params, client_config, client_id, round):
+class DeterministicMnistModelTrainer:
+    def __init__(self, model_params, client_config, client_id, round, round_size):
+        # TODO @udameli this should be set by the base class
         print('Initializing MnistModelTrainer...')
         self.ACCURACY_THRESHOLD = 0.5
         self.training_dataloader = None
         self.validation_dataloader = None
         self.client_config = client_config
         self.model_params = model_params
-        self.round = round
+
+        # TODO check if they're already passed in as int or are they string?
         self.client_id = client_id
+        self.round = round
+        self.round_size = round_size
 
     def train_model(self):
         training_dataset, validation_dataset = self.__load_datasets()
@@ -32,7 +36,8 @@ class MnistModelTrainer:
                 model_param.grad.zero_()
 
     def __validate_epoch(self):
-        accuracies = [self.__accuracy(linear_model(train_data, weights=self.model_params[0], bias=self.model_params[1]), train_labels) for
+        accuracies = [self.__accuracy(linear_model(train_data, weights=self.model_params[0], bias=self.model_params[1]),
+                                      train_labels) for
                       train_data, train_labels in
                       self.validation_dataloader]
         return round(torch.stack(accuracies).mean().item(), 4)
@@ -53,11 +58,12 @@ class MnistModelTrainer:
         print('Content of MNIST_SAMPLE:', path.ls())
         print("Content of 'train' directory of MNIST_SAMPLE", (path / 'train').ls())
 
+        train_sample_size = 25
         client_id = int(self.client_id)
         round = int(self.round)
-        train_sample_size = 25
-        max_client_number = 5
-        start_index = train_sample_size * client_id + (round - 1) * train_sample_size * max_client_number
+        round_size = int(self.round_size)
+
+        start_index = train_sample_size * client_id + (round - 1) * train_sample_size * round_size
         end_index = start_index + train_sample_size
         threes = (path / 'train' / '3').ls().sorted()[start_index:end_index]
         sevens = (path / 'train' / '7').ls().sorted()[start_index:end_index]
@@ -71,16 +77,19 @@ class MnistModelTrainer:
         stacked_sevens = torch.stack(seven_tensors).float() / 255
 
         valid_sample_size = 15
-        valid_start_index = valid_sample_size * client_id + (round - 1) * valid_sample_size * max_client_number
+        valid_start_index = valid_sample_size * client_id + (round - 1) * valid_sample_size * round_size
         valid_end_index = start_index + valid_sample_size
         valid_three_paths = (path / 'valid' / '3').ls().sorted()[valid_start_index:valid_end_index]
         valid_seven_paths = (path / 'valid' / '7').ls()[valid_start_index:valid_end_index]
 
-        valid_three_tensors = torch.stack([tensor(Image.open(valid_three_path)) for valid_three_path in valid_three_paths])
+        valid_three_tensors = torch.stack(
+            [tensor(Image.open(valid_three_path)) for valid_three_path in valid_three_paths])
         valid_three_tensors = valid_three_tensors.float() / 255
-        valid_seven_tensors = torch.stack([tensor(Image.open(valid_seven_path)) for valid_seven_path in valid_seven_paths])
+        valid_seven_tensors = torch.stack(
+            [tensor(Image.open(valid_seven_path)) for valid_seven_path in valid_seven_paths])
         valid_seven_tensors = valid_seven_tensors.float() / 255
-        print('Shape of tensors of valid set of 3 images:', valid_three_tensors.shape, 'Shape of tensors of valid set of 7 images:',
+        print('Shape of tensors of valid set of 3 images:', valid_three_tensors.shape,
+              'Shape of tensors of valid set of 7 images:',
               valid_seven_tensors.shape)
 
         train_images = torch.cat([stacked_threes, stacked_sevens]).view(-1, 28 * 28)
@@ -94,4 +103,3 @@ class MnistModelTrainer:
         print('Dataset ready to be used')
         sys.stdout.flush()
         return training_dataset, validation_dataset
-
