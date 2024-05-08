@@ -41,7 +41,7 @@ class Server:
 
             request_body = {}
             federated_learning_config = None
-            if training_type == TrainingType.MNIST:
+            if training_type == TrainingType.MNIST or training_type == TrainingType.DETERMINISTIC_MNIST:
                 request_body = model_params_to_request_params(training_type, self.mnist_model_params)
                 federated_learning_config = FederatedLearningConfig(learning_rate=1., epochs=20, batch_size=256)
             elif training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
@@ -87,7 +87,7 @@ class Server:
         if self.can_update_central_model_params():
             print('Updating global model params')
             self.status = ServerStatus.UPDATING_MODEL_PARAMS
-            if training_type == TrainingType.MNIST:
+            if training_type == TrainingType.MNIST or training_type == TrainingType.DETERMINISTIC_MNIST:
                 received_weights = []
                 received_biases = []
                 for training_client in self.training_clients.values():
@@ -98,7 +98,7 @@ class Server:
                 new_weights = torch.stack(received_weights).mean(0)
                 new_bias = torch.stack(received_biases).mean(0)
                 self.mnist_model_params = new_weights, new_bias
-                print('Model weights for', TrainingType.MNIST, 'updated in central model')
+                print('Model weights for', training_type, 'updated in central model')
             elif training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
                 received_weights = []
                 for training_client in self.training_clients.values():
