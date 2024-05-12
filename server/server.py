@@ -36,7 +36,8 @@ class Server:
         elif len(self.training_clients) == 0:
             print("There aren't any clients registered in the system, nothing to do yet")
         else:
-            # increment training round
+            # Increment training round
+            # This is needed for deterministic MNIST training
             self.round += 1
 
             request_body = {}
@@ -58,7 +59,6 @@ class Server:
             tasks = []
             for training_client in self.training_clients.values():
                 if training_type == TrainingType.DETERMINISTIC_MNIST:
-                    request_body['client_id'] = training_client.client_id
                     request_body['round_size'] = len(self.training_clients.values())
                 tasks.append(
                     asyncio.ensure_future(self.do_training_client_request(training_type, training_client, request_body))
@@ -72,6 +72,8 @@ class Server:
         request_url = training_client.client_url + '/training'
         print('Requesting training to client', request_url)
         async with aiohttp.ClientSession() as session:
+            # Ensures individual client_ids are sent to each client
+            request_body['client_id'] = training_client.client_id
             training_client.status = ClientTrainingStatus.TRAINING_REQUESTED
             async with session.post(request_url, json=request_body) as response:
                 if response.status != 200:

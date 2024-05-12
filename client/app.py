@@ -31,7 +31,6 @@ def training():
                                                         request.json['epochs'],
                                                         request.json['batch_size'])
     model_params = request_params_to_model_params(training_type, request.json)
-    print(request.json)
     client_id = request.json['client_id']
     round = request.json['round']
     round_size = request.json['round_size']
