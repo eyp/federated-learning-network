@@ -36,7 +36,7 @@ class Client:
             self.training_type = training_type
 
             if self.training_type == TrainingType.MNIST:
-                client_model_trainer = MnistModelTrainer(model_params, federated_learning_config, client_id, round)
+                client_model_trainer = MnistModelTrainer(model_params, federated_learning_config)
             elif self.training_type == TrainingType.DETERMINISTIC_MNIST:
                 client_model_trainer = DeterministicMnistModelTrainer(model_params, federated_learning_config, client_id, round, round_size)
             elif self.training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
