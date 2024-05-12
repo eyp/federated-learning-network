@@ -39,6 +39,10 @@ class Client:
                 client_model_trainer = MnistModelTrainer(model_params, federated_learning_config)
             elif self.training_type == TrainingType.DETERMINISTIC_MNIST:
                 client_model_trainer = DeterministicMnistModelTrainer(model_params, federated_learning_config, client_id, round, round_size)
+            elif self.training_type == TrainingType.GOSSIP_MNIST:
+                print('Using Gossip')
+                # TODO implement gossip trainer
+                client_model_trainer = MnistModelTrainer(model_params, federated_learning_config)
             elif self.training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
                 client_model_trainer = ChestXRayModelTrainer(model_params, federated_learning_config)
             else:
