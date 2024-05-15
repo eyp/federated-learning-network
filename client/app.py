@@ -34,7 +34,8 @@ def training():
     client_id = request.json['client_id']
     round = request.json['round']
     round_size = request.json['round_size']
-    client.do_training(training_type, model_params, federated_learning_config, client_id, round, round_size)
+    clients = request.json.get('clients', None)
+    client.do_training(training_type, model_params, federated_learning_config, client_id, round, round_size, clients)
     return Response(status=200)
 
 

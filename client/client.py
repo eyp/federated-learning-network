@@ -31,7 +31,7 @@ class Client:
             return
         self.register()
 
-    def do_training(self, training_type, model_params, federated_learning_config, client_id, round, round_size):
+    def do_training(self, training_type, model_params, federated_learning_config, client_id, round, round_size, clients):
         if self.can_do_training():
             self.training_type = training_type
 
@@ -51,9 +51,13 @@ class Client:
             self.status = ClientStatus.TRAINING
             print('Training started...')
             try:
-                model_params_updated = client_model_trainer.train_model()
-                model_params_updated = model_params_to_request_params(training_type, model_params_updated)
-                self.update_model_params_on_server(model_params_updated)
+                if self.training_type == TrainingType.GOSSIP_MNIST:
+                    self.finish_round()
+                else:
+                    model_params_updated = client_model_trainer.train_model()
+                    model_params_updated = model_params_to_request_params(training_type, model_params_updated)
+
+                    self.update_model_params_on_server(model_params_updated)
             except Exception as e:
                 raise e
             finally:
@@ -61,6 +65,18 @@ class Client:
                 print('Training finished...')
         else:
             print('Training requested but client status is', self.status)
+        sys.stdout.flush()
+
+    def finish_round(self):
+        request_url = self.SERVER_URL + '/finish_round'
+        request_body = {'client_url': self.client_url, 'training_type': self.training_type}
+        print('Requesting to finish the current round')
+        response = requests.post(request_url, json=request_body)
+        print('Response received', response)
+        if response.status_code != 200:
+            print('Error request to finish the current round. Error:', response.reason)
+        else:
+            print('Round finished')
         sys.stdout.flush()
 
     def update_model_params_on_server(self, model_params):

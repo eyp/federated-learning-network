@@ -42,8 +42,14 @@ class Server:
 
             request_body = {}
             federated_learning_config = None
-            if training_type == TrainingType.MNIST or training_type == TrainingType.DETERMINISTIC_MNIST:
+            if (
+                    training_type == TrainingType.MNIST
+                    or training_type == TrainingType.DETERMINISTIC_MNIST
+            ):
                 request_body = model_params_to_request_params(training_type, self.mnist_model_params)
+                federated_learning_config = FederatedLearningConfig(learning_rate=1., epochs=20, batch_size=256)
+            elif training_type == TrainingType.GOSSIP_MNIST:
+                request_body = model_params_to_request_params(training_type, None)
                 federated_learning_config = FederatedLearningConfig(learning_rate=1., epochs=20, batch_size=256)
             elif training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
                 request_body = model_params_to_request_params(training_type, self.chest_x_ray_model_params)
@@ -55,10 +61,18 @@ class Server:
             request_body['training_type'] = training_type
             request_body['round'] = self.round
 
+            if training_type == TrainingType.GOSSIP_MNIST:
+                # Send all client urls and ids to each client for decentralized learning
+                clients = [
+                    {"client_id": client.client_id, "client_url": client.client_url}
+                    for client in self.training_clients.values()
+                ]
+                request_body['clients'] = clients
+
             print('There are', len(self.training_clients), 'clients registered')
             tasks = []
             for training_client in self.training_clients.values():
-                if training_type == TrainingType.DETERMINISTIC_MNIST:
+                if training_type == TrainingType.DETERMINISTIC_MNIST or training_type == TrainingType.GOSSIP_MNIST:
                     request_body['round_size'] = len(self.training_clients.values())
                 tasks.append(
                     asyncio.ensure_future(self.do_training_client_request(training_type, training_client, request_body))
@@ -88,6 +102,17 @@ class Server:
         training_client.model_params = client_model_params
         training_client.status = ClientTrainingStatus.TRAINING_FINISHED
         self.update_server_model_params(training_type)
+
+    # Forces the round to finish. This is used for Gossip training
+    # since no parameters will be sent back to the server
+    # so the server needs to know when the round is finished
+    def finish_round(self, training_type, training_client):
+        training_client.status = ClientTrainingStatus.TRAINING_FINISHED
+
+        if self.can_update_central_model_params() and training_type == TrainingType.GOSSIP_MNIST:
+            self.status = ServerStatus.IDLE
+            training_client.status = ClientTrainingStatus.IDLE
+        sys.stdout.flush()
 
     def update_server_model_params(self, training_type):
         if self.can_update_central_model_params():
