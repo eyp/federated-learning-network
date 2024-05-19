@@ -36,12 +36,13 @@ class Server:
         elif len(self.training_clients) == 0:
             print("There aren't any clients registered in the system, nothing to do yet")
         else:
-            # increment training round
+            # Increment training round
+            # This is needed for deterministic MNIST training
             self.round += 1
 
             request_body = {}
             federated_learning_config = None
-            if training_type == TrainingType.MNIST:
+            if training_type == TrainingType.MNIST or training_type == TrainingType.DETERMINISTIC_MNIST:
                 request_body = model_params_to_request_params(training_type, self.mnist_model_params)
                 federated_learning_config = FederatedLearningConfig(learning_rate=1., epochs=20, batch_size=256)
             elif training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
@@ -57,8 +58,11 @@ class Server:
             print('There are', len(self.training_clients), 'clients registered')
             tasks = []
             for training_client in self.training_clients.values():
-                request_body['client_id'] = training_client.client_id
-                tasks.append(asyncio.ensure_future(self.do_training_client_request(training_type, training_client, request_body)))
+                if training_type == TrainingType.DETERMINISTIC_MNIST:
+                    request_body['round_size'] = len(self.training_clients.values())
+                tasks.append(
+                    asyncio.ensure_future(self.do_training_client_request(training_type, training_client, request_body))
+                )
             print('Requesting training to clients...')
             self.status = ServerStatus.CLIENTS_TRAINING
             await asyncio.gather(*tasks)
@@ -68,6 +72,8 @@ class Server:
         request_url = training_client.client_url + '/training'
         print('Requesting training to client', request_url)
         async with aiohttp.ClientSession() as session:
+            # Ensures individual client_ids are sent to each client
+            request_body['client_id'] = training_client.client_id
             training_client.status = ClientTrainingStatus.TRAINING_REQUESTED
             async with session.post(request_url, json=request_body) as response:
                 if response.status != 200:
@@ -87,7 +93,7 @@ class Server:
         if self.can_update_central_model_params():
             print('Updating global model params')
             self.status = ServerStatus.UPDATING_MODEL_PARAMS
-            if training_type == TrainingType.MNIST:
+            if training_type == TrainingType.MNIST or training_type == TrainingType.DETERMINISTIC_MNIST:
                 received_weights = []
                 received_biases = []
                 for training_client in self.training_clients.values():
@@ -98,7 +104,7 @@ class Server:
                 new_weights = torch.stack(received_weights).mean(0)
                 new_bias = torch.stack(received_biases).mean(0)
                 self.mnist_model_params = new_weights, new_bias
-                print('Model weights for', TrainingType.MNIST, 'updated in central model')
+                print('Model weights for', training_type, 'updated in central model')
             elif training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
                 received_weights = []
                 for training_client in self.training_clients.values():
@@ -123,11 +129,9 @@ class Server:
         if self.training_clients.get(client_url) is None:
             next_client_id = len(self.training_clients) + 1
             self.training_clients[client_url] = TrainingClient(client_url, next_client_id)
-            return next_client_id, self.round
         else:
             print('Client [', client_url, '] was already registered in the system')
             self.training_clients.get(client_url).status = ClientTrainingStatus.IDLE
-            return self.training_clients.get(client_url).client_id, self.round
         sys.stdout.flush()
 
     def unregister_client(self, client_url):

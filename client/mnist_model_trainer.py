@@ -4,15 +4,13 @@ from .training_utils import mnist_loss, linear_model
 
 
 class MnistModelTrainer:
-    def __init__(self, model_params, client_config, client_id, round):
+    def __init__(self, model_params, client_config):
         print('Initializing MnistModelTrainer...')
         self.ACCURACY_THRESHOLD = 0.5
         self.training_dataloader = None
         self.validation_dataloader = None
         self.client_config = client_config
         self.model_params = model_params
-        self.round = round
-        self.client_id = client_id
 
     def train_model(self):
         training_dataset, validation_dataset = self.__load_datasets()
@@ -46,39 +44,31 @@ class MnistModelTrainer:
         corrections = (predictions > self.ACCURACY_THRESHOLD) == train_labels
         return corrections.float().mean()
 
+    def __get_tensors(self, path, digit):
+        digits = random.sample((path / 'train' / digit).ls().sorted(), int(random.uniform(20, 30)))
+        digit_tensors = [tensor(Image.open(image_path)) for image_path in digits]
+
+        valid_digit_paths = random.sample((path / 'valid' / digit).ls(), int(random.uniform(10, 20)))
+        valid_digit_tensors = torch.stack(
+            [tensor(Image.open(valid_digit_path)) for valid_digit_path in valid_digit_paths])
+        valid_digit_tensors = valid_digit_tensors.float() / 255
+
+        return digit_tensors, digits, valid_digit_tensors
+
     def __load_datasets(self):
         print('Loading dataset MNIST_SAMPLE...')
         path = untar_data(URLs.MNIST_SAMPLE)
         print('Content of MNIST_SAMPLE:', path.ls())
         print("Content of 'train' directory of MNIST_SAMPLE", (path / 'train').ls())
 
-        client_id = int(self.client_id)
-        round = int(self.round)
-        train_sample_size = 25
-        max_client_number = 5
-        start_index = train_sample_size * client_id + (round - 1) * train_sample_size * max_client_number
-        end_index = start_index + train_sample_size
-        threes = (path / 'train' / '3').ls().sorted()[start_index:end_index]
-        sevens = (path / 'train' / '7').ls().sorted()[start_index:end_index]
-
-        three_tensors = [tensor(Image.open(image_path)) for image_path in threes]
-        seven_tensors = [tensor(Image.open(image_path)) for image_path in sevens]
+        three_tensors, threes, valid_three_tensors = self.__get_tensors(path, '3')
+        seven_tensors, sevens, valid_seven_tensors = self.__get_tensors(path, '7')
 
         print("There are', len(three_tensors), 'images of number 3 and', len(seven_tensors), 'of number 7\n")
 
         stacked_threes = torch.stack(three_tensors).float() / 255
         stacked_sevens = torch.stack(seven_tensors).float() / 255
 
-        valid_sample_size = 15
-        valid_start_index = valid_sample_size * client_id + (round - 1) * valid_sample_size * max_client_number
-        valid_end_index = start_index + valid_sample_size
-        valid_three_paths = (path / 'valid' / '3').ls().sorted()[valid_start_index:valid_end_index]
-        valid_seven_paths = (path / 'valid' / '7').ls()[valid_start_index:valid_end_index]
-
-        valid_three_tensors = torch.stack([tensor(Image.open(valid_three_path)) for valid_three_path in valid_three_paths])
-        valid_three_tensors = valid_three_tensors.float() / 255
-        valid_seven_tensors = torch.stack([tensor(Image.open(valid_seven_path)) for valid_seven_path in valid_seven_paths])
-        valid_seven_tensors = valid_seven_tensors.float() / 255
         print('Shape of tensors of valid set of 3 images:', valid_three_tensors.shape, 'Shape of tensors of valid set of 7 images:',
               valid_seven_tensors.shape)
 

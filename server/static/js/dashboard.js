@@ -37,6 +37,11 @@
         $ctrl.chestXRayTrainingButton.addEventListener('click', () => {
             launchTraining(this, 'CHEST_X_RAY_PNEUMONIA');
         }, false);
+
+        $ctrl.deterministicMnistTrainingButton = document.getElementById('deterministicMnistTrainingButton')
+        $ctrl.deterministicMnistTrainingButton.addEventListener('click', () => {
+            launchTraining(this, 'DETERMINISTIC_MNIST');
+        }, false);
     }
 
     init();
