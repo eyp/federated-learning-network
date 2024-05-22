@@ -1,12 +1,13 @@
 import os
 import signal
 
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 from os import environ
 
 from .client import Client
 from .federated_learning_config import FederatedLearningConfig
-from .utils import request_params_to_model_params
+from .utils import request_params_to_model_params, model_params_to_request_params
+from .training_type import TrainingType
 
 CLIENT_URL = environ.get('CLIENT_URL')
 if CLIENT_URL is None:
@@ -37,6 +38,14 @@ def training():
     clients = request.json.get('clients', None)
     client.do_training(training_type, model_params, federated_learning_config, client_id, round, round_size, clients)
     return Response(status=200)
+
+
+@app.route('/model_params', methods=['GET'])
+def get_model_params():
+    model_params = model_params_to_request_params(TrainingType.GOSSIP_MNIST, client.model_params)
+    response = jsonify({'model_params': model_params})
+    response.status_code = 200
+    return response
 
 
 @app.errorhandler(404)

@@ -1,5 +1,6 @@
 import sys
 import requests
+import torch
 
 from os import environ
 
@@ -9,6 +10,7 @@ from .deterministic_mnist_model_trainer import DeterministicMnistModelTrainer
 from .utils import model_params_to_request_params
 from .mnist_model_trainer import MnistModelTrainer
 from .chest_x_ray_model_trainer import ChestXRayModelTrainer
+from .gossip_mnist_model_trainer import GossipMnistModelTrainer
 from .client_status import ClientStatus
 from .config import DEFAULT_SERVER_URL
 from .training_type import TrainingType
@@ -19,6 +21,7 @@ class Client:
         self.client_url = client_url
         self.status = ClientStatus.IDLE
         self.training_type = None
+        self.model_params = self.__get_initial_params()
         self.SERVER_URL = environ.get('SERVER_URL')
         if self.SERVER_URL is None:
             print('Warning: SERVER_URL environment variable is not defined, using DEFAULT_SERVER_URL:', DEFAULT_SERVER_URL)
@@ -31,6 +34,11 @@ class Client:
             return
         self.register()
 
+    def __get_initial_params(self):
+        weights = torch.randn((28 * 28, 1), dtype=torch.float, requires_grad=True)
+        bias = torch.randn(1, dtype=torch.float, requires_grad=True)
+        return weights, bias
+
     def do_training(self, training_type, model_params, federated_learning_config, client_id, round, round_size, clients):
         if self.can_do_training():
             self.training_type = training_type
@@ -40,9 +48,8 @@ class Client:
             elif self.training_type == TrainingType.DETERMINISTIC_MNIST:
                 client_model_trainer = DeterministicMnistModelTrainer(model_params, federated_learning_config, client_id, round, round_size)
             elif self.training_type == TrainingType.GOSSIP_MNIST:
-                print('Using Gossip')
-                # TODO implement gossip trainer
-                client_model_trainer = MnistModelTrainer(model_params, federated_learning_config)
+                # Using model params stored on the client
+                client_model_trainer = GossipMnistModelTrainer(self.model_params, federated_learning_config, client_id, round, round_size, clients)
             elif self.training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:
                 client_model_trainer = ChestXRayModelTrainer(model_params, federated_learning_config)
             else:
@@ -51,12 +58,13 @@ class Client:
             self.status = ClientStatus.TRAINING
             print('Training started...')
             try:
+                model_params_updated = client_model_trainer.train_model()
+
                 if self.training_type == TrainingType.GOSSIP_MNIST:
+                    self.model_params = model_params_updated
                     self.finish_round()
                 else:
-                    model_params_updated = client_model_trainer.train_model()
                     model_params_updated = model_params_to_request_params(training_type, model_params_updated)
-
                     self.update_model_params_on_server(model_params_updated)
             except Exception as e:
                 raise e
