@@ -8,7 +8,11 @@ from .training_type import TrainingType
 def model_params_to_request_params(training_type, model_params):
     if model_params is None:
         return {}
-    if training_type == TrainingType.MNIST or training_type == TrainingType.DETERMINISTIC_MNIST:
+    if (
+            training_type == TrainingType.MNIST
+            or training_type == TrainingType.DETERMINISTIC_MNIST
+            or training_type == TrainingType.GOSSIP_MNIST
+    ):
         numpy_params = to_np(model_params)
         return {'weights': numpy_params[0].tolist(), 'bias': numpy_params[1].tolist()}
     elif training_type == TrainingType.CHEST_X_RAY_PNEUMONIA:

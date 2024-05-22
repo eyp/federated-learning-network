@@ -42,6 +42,11 @@
         $ctrl.deterministicMnistTrainingButton.addEventListener('click', () => {
             launchTraining(this, 'DETERMINISTIC_MNIST');
         }, false);
+
+        $ctrl.gossipMnistTrainingButton = document.getElementById('gossipMnistTrainingButton')
+        $ctrl.gossipMnistTrainingButton.addEventListener('click', () => {
+            launchTraining(this, 'GOSSIP_MNIST');
+        }, false);
     }
 
     init();
