@@ -27,11 +27,14 @@ def model_params_to_request_params(training_type, model_params):
 
 def request_params_to_model_params(training_type, request_data):
     model_params = None
-    if training_type == TrainingType.GOSSIP_MNIST:
-        model_params = [], []
+
+    if 'weights' not in request_data and 'bias' not in request_data and training_type == TrainingType.GOSSIP_MNIST:
+        return [], []
+
     if (
             training_type == TrainingType.MNIST
             or training_type == TrainingType.DETERMINISTIC_MNIST
+            or training_type == TrainingType.GOSSIP_MNIST
     ):
         weights = torch.tensor(np.array(request_data['weights']), dtype=torch.float, requires_grad=True)
         bias = torch.tensor(np.array(request_data['bias']), dtype=torch.float, requires_grad=True)

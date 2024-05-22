@@ -111,7 +111,8 @@ class Server:
 
         if self.can_update_central_model_params() and training_type == TrainingType.GOSSIP_MNIST:
             self.status = ServerStatus.IDLE
-            training_client.status = ClientTrainingStatus.IDLE
+            for training_client in self.training_clients.values():
+                training_client.status = ClientTrainingStatus.IDLE
         sys.stdout.flush()
 
     def update_server_model_params(self, training_type):

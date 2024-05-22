@@ -5,6 +5,8 @@ import aiohttp
 import torch
 
 from .deterministic_mnist_model_trainer import DeterministicMnistModelTrainer
+from .utils import request_params_to_model_params, model_params_to_request_params
+from .training_type import TrainingType
 
 
 class GossipMnistModelTrainer(DeterministicMnistModelTrainer):
@@ -16,19 +18,26 @@ class GossipMnistModelTrainer(DeterministicMnistModelTrainer):
         updated_model_params = super(DeterministicMnistModelTrainer, self).train_model()
 
         peer_model_params = asyncio.run(self.update_model_params_from_peers())
+        if peer_model_params is None:
+            return updated_model_params
 
-        all_peer_weights = [torch.tensor(params["weights"]) for params in peer_model_params]
-        all_peer_weights = torch.stack(all_peer_weights)
-        all_weights = torch.cat((all_peer_weights, updated_model_params[0].unsqueeze(0)), dim=0)
-        new_weights = all_weights.mean(0)
+        all_peer_weights = [params[0] for params in peer_model_params]
+        all_peer_weights.append(updated_model_params[0])
+        new_weights = torch.stack(all_peer_weights).mean(0)
 
-        all_peer_biases = [torch.tensor(params["bias"]) for params in peer_model_params]
-        all_peer_biases = torch.stack(all_peer_biases)
-        all_biases = torch.cat((all_peer_biases, updated_model_params[1].unsqueeze(0)), dim=0)
-        new_biases = all_biases.mean(0)
+        all_peer_biases = [params[1] for params in peer_model_params]
+        all_peer_biases.append(updated_model_params[1])
+        new_biases = torch.stack(all_peer_biases).mean(0)
 
-        print('Client model params updated')
-        return new_weights, new_biases
+        # Hack to turn weights and biases into leaf tensors
+        new_params = request_params_to_model_params(
+            TrainingType.GOSSIP_MNIST,
+            model_params_to_request_params(
+                TrainingType.GOSSIP_MNIST, (new_weights, new_biases)
+            )
+        )
+
+        return new_params
 
     def __select_peers(self):
         peers_without_self = [peer for peer in self.peers if peer["client_id"] != self.client_id]
@@ -51,6 +60,7 @@ class GossipMnistModelTrainer(DeterministicMnistModelTrainer):
                     print('Model params received from', peer["client_url"])
                     data = await response.json()
                     peer_model_params = data["model_params"]
+                    peer_model_params = request_params_to_model_params(TrainingType.GOSSIP_MNIST, peer_model_params)
                     return peer_model_params
 
     async def update_model_params_from_peers(self):

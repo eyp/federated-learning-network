@@ -84,7 +84,7 @@ class Client:
         if response.status_code != 200:
             print('Error request to finish the current round. Error:', response.reason)
         else:
-            print('Round finished')
+            print('Finish round request sent for client', self.client_url)
         sys.stdout.flush()
 
     def update_model_params_on_server(self, model_params):
