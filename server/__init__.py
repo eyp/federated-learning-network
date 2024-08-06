@@ -6,6 +6,7 @@ from flask import (
 )
 
 from .server import Server
+from .training_type import TrainingType
 from .utils import request_params_to_model_params
 
 
@@ -34,7 +35,6 @@ def create_app(test_config=None):
 
     @app.route('/training', methods=['POST'])
     def training():
-        print('Request POST /training')
         training_type = request.json['training_type']
         asyncio.run(server.start_training(training_type))
         return Response(status=200)
@@ -63,6 +63,19 @@ def create_app(test_config=None):
         except KeyError:
             print('Client', client_url, 'is not registered in the system')
             return Response(status=401)
+
+    @app.route('/finish_round', methods=['POST'])
+    def finish_round():
+        client_url = request.json['client_url']
+        training_type = request.json['training_type']
+        print('Request POST /finish_round for client_url [', client_url, '] and training type:', training_type)
+        if training_type == TrainingType.GOSSIP_MNIST:
+            training_client = server.training_clients[request.json['client_url']]
+            server.finish_round(training_type, training_client)
+            return Response(status=200)
+        else:
+            return Response(status=400)
+
 
     @app.errorhandler(404)
     def page_not_found(error):
